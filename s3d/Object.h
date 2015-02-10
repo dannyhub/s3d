@@ -13,8 +13,8 @@ namespace s3d
 
 class Object {
 public:
-  typedef Point4<float> PointType;
-  typedef Point4<float> VectorType;
+  typedef Point4<double> PointType;
+  typedef Point4<double> VectorType;
 
   typedef VertexList<PointType> VertexListType;
   typedef Polygon<3U> PolygonType;
@@ -81,4 +81,9 @@ inline Point4<T> operator * (Point4<T> pt4, const Matrix<T, 4U, 4U>& m1) {
   return ptRes;
 }
 
+void addToWorld(Object& obj, double x, double y, double z);
+
+void setCamera(Object& obj, Point4FD pt, double anglex, double angley, double anglez);
+
+void projection(Object& obj, int viewWidth, int viewHeight);
 }// s3d

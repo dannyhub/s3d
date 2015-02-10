@@ -153,7 +153,7 @@ namespace vector_impl
   }
 
   inline bool equalZero(double a) {
-    return ::fabs(a) < 1E-14;
+    return ::fabs(a) < 1E-13;
   }
 
 }// vector_impl

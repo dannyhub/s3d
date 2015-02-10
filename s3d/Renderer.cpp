@@ -127,17 +127,43 @@ void Renderer::drawPixel2D(const Point2<int>& p0, const Color& c) {
 }
 
 void Renderer::drawLine2D(const Point2<int>& p0, const Point2<int>& p1, const Color& c) {
-  if (p1.x_ == p0.x_) {
-    drawLine2D_Vertical(p0,p1,c);
+  Point2<int> cp0 = p0;
+  if (cp0.x_ < 0) 
+    cp0.x_ = 0;
+
+  if (cp0.y_ < 0)
+    cp0.y_ = 0;
+
+  if (cp0.x_ >= buffer_.getWidth())
+    cp0.x_ = buffer_.getWidth()-1;
+
+  if (cp0.y_ >= buffer_.getHeight())
+    cp0.y_ = buffer_.getHeight() - 1;
+
+  Point2<int> cp1 = p1;
+  if (cp1.x_ < 0)
+    cp1.x_ = 0;
+
+  if (cp1.y_ < 0)
+    cp1.y_ = 0;
+
+  if (cp1.x_ >= buffer_.getWidth())
+    cp1.x_ = buffer_.getWidth() - 1;
+
+  if (cp1.y_ >= buffer_.getHeight())
+    cp1.y_ = buffer_.getHeight() - 1;
+
+  if (cp1.x_ == cp0.x_) {
+    drawLine2D_Vertical(cp0, cp1, c);
     return;
   }
 
-  if (p1.y_ == p0.y_) {
-    drawLine2D_Horizontal(p0, p1, c);
+  if (cp1.y_ == cp0.y_) {
+    drawLine2D_Horizontal(cp0, cp1, c);
     return;
   }
 
-  drawLine2D_Bresenham(p0, p1, c);
+  drawLine2D_Bresenham(cp0, cp1, c);
 }
 
 void Renderer::drawTriangle2D(const Point2<int>& p0, const Point2<int>& p1, const Point2<int>& p2, const Color& c) {

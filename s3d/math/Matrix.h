@@ -9,7 +9,7 @@
 namespace s3d
 {
 
-#define CHECK_THROW(con,except) do {assert(con); if (!(con)) throw (except);}  while(0)
+#define CHECK_THROW(con,except)  {assert(con); if (!(con)) throw (except);}
 
 class MatrixInverseException : public std::exception {
 public:
@@ -100,7 +100,7 @@ namespace matrix_impl
   }
 
   inline bool equalZero(double a) {
-    return ::fabs(a) < 1E-14;
+    return ::fabs(a) < 1E-13;
   }
 
 }// matrix_impl

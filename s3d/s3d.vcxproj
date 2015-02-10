@@ -146,7 +146,6 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Graphics.cpp" />
-    <ClCompile Include="math\Matrix.cpp" />
     <ClCompile Include="math\tests\geometry_unittest.cpp" />
     <ClCompile Include="math\tests\matrix_unittest.cpp" />
     <ClCompile Include="math\tests\vector_unittest.cpp" />

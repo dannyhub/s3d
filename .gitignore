@@ -1,21 +1,24 @@
+# vs2013
 build/*
+Visual Studio 2013
+Visual Studio 2013/*
+Visual Studio 2013Templates
+Visual Studio 2013Templates/*
+Visual Studio 2013Projects
+Visual Studio 2013Projects/*
 *.ncb
-*.[oa]
+*.o
 *.exe
 *.obj
-*.dll
 *.ilk
 *.pdb
 *.exp
-*.pch
 *.idb
 *.pdb
 *.sdf
 *.suo
-# Compiled Object files
 *.slo
 *.lo
-*.o
 *.obj
 
 # Precompiled Headers

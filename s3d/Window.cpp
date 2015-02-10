@@ -4,6 +4,8 @@
 
 #include <unordered_map>
 
+#include "Object.h"
+
 using namespace std;
 
 
@@ -52,11 +54,88 @@ Window::~Window() {
   assert(hWnd_ == NULL);
 }
 
+static double anglex = 0 * 3.1415927 / 180;;
+static double angley = 0 * 3.1415927 / 180;
+static double anglez = 0 * 3.1415927 / 180;
+
+double wx = 0;
+double wy = 0;
+double wz = 400;
+
+double cx = 0;
+double cy = 0;
+double cz = 0;
+
 LRESULT Window::wndProc(UINT message, WPARAM wParam, LPARAM lParam) {
   PAINTSTRUCT ps;
   HDC hdc;
 
   switch (message) {
+  case  WM_KEYDOWN:
+    if (0x41 == wParam) {
+      cx -= 7;
+    }
+
+    if (0x44 == wParam) {
+      cx += 7;
+    }
+
+    if (0x57 == wParam) {
+      cy += 7;
+    }
+
+    if (0x53 == wParam) {
+      cy -= 7;
+    }
+
+
+    //f
+    if (0x46 == wParam) {
+      cz += 7;
+    }
+
+    //g
+    if (0x47 == wParam) {
+      cz -= 7;
+    }
+
+
+    //i
+    if (0x49 == wParam) {
+      anglex += 7 * 3.1415927 / 180.0;
+    }
+
+    //k
+    if (0x4B == wParam) {
+      anglex -= 7 * 3.1415927 / 180.0;
+    }
+
+    //j
+    if (0x4A == wParam) {
+      angley -= 7 * 3.1415927 / 180.0;
+    }
+
+    //l
+    if (0x4C == wParam) {
+      angley += 7 * 3.1415927 / 180.0;
+    }
+
+    //0
+    if (0x4F == wParam) {
+      anglez -= 7 * 3.1415927 / 180.0;
+    }
+
+    //p
+    if (0x50 == wParam) {
+      anglez += 7 * 3.1415927 / 180.0;
+    }
+
+
+        //anglex += 1 * 3.1415927 / 180;
+    //cz += 10;
+    this->needRedraw();
+    return DefWindowProc(hWnd_, message, wParam, lParam);;
+  break;
   case WM_ERASEBKGND:
     return TRUE;
   break;
@@ -135,51 +214,86 @@ bool Window::onCreate() {
 void Window::needRedraw() {
   RECT rect;
   ::GetWindowRect(hWnd_, &rect);
-  ::InvalidateRect(hWnd_, &rect, TRUE);
+  ::InvalidateRect(NULL, NULL, FALSE);
 }
+
+
 
 void Window::onDraw(Renderer& renderer) {
   // for (int i = 0; i<1000; ++i)
   // renderer.drawLine2D_DDA(Point2<int>(rand() % 1024, rand() % 1024), Point2<int>(rand() % rand() % 1024, 230), Color(rand() % 255, rand() % 255, rand() % 255));
-  RECT rect;
-  ::GetWindowRect(hWnd_, &rect);
-  const int winWidth = rect.right - rect.left + 1;
-  const int winHeight = rect.bottom - rect.top + 1;
+  //RECT rect;
+  //::GetWindowRect(hWnd_, &rect);
+  //const int winWidth = rect.right - rect.left + 1;
+  //const int winHeight = rect.bottom - rect.top + 1;
 
-  renderer.drawLine2D_Horizontal(Point2<int>(winWidth / 4, winHeight / 2), Point2<int>(winWidth / 2, winHeight / 2), Color(255, 0, 0));
-  renderer.drawLine2D_Horizontal(Point2<int>(winWidth / 8, winHeight / 3), Point2<int>(winWidth / 2, winHeight / 3), Color(255, 0, 0));
+  Object obj(1, "testobj");
+  obj.addVertex({0, 40, 30});
+  obj.addVertex({40, -40, 30});
+  obj.addVertex({-40, -40, 30});
 
-  renderer.drawLine2D_Vertical(Point2<int>(winWidth / 5, winHeight / 4), Point2<int>(winWidth / 5, winHeight / 2), Color(255, 255, 0));
-  renderer.drawLine2D_Vertical(Point2<int>(winWidth / 2, winHeight / 6), Point2<int>(winWidth / 2, winHeight / 3), Color(255, 0, 255));
+  obj.addVertex({-150, 0, 0});
+  obj.addVertex({150, 0, 0});
 
-  int randW = winWidth - 100;
-  int randH = winHeight - 100;
+  obj.addVertex({0, -150, 0});
+  obj.addVertex({0, 150, 0});
 
-  {
-    Point2<int> p0(rand() % randW, rand() % randH);
-    Point2<int> p1(rand() % randW, rand() % randH);
-    Point2<int> p2(rand() % randW, rand() % randH);
+  obj.addVertex({0, 0, -150});
+  obj.addVertex({0, 0, 150});
 
-    renderer.drawTriangle2D(p0, p1, p2, Color(255, 0, 255));
-  }
+  obj.addPolygon({0, 1, 2});
 
-  {
-    Point2<int> p0(rand() % randW, rand() % randH);
-    Point2<int> p1(rand() % randW, rand() % randH);
+  addToWorld(obj, wx, wy, wz);
+
+  setCamera(obj, {cx, cy, cz}, -anglex, -angley, -anglez);
+  int viewWidth = 600;
+  int viewHeight = 600;
+
+  projection(obj, viewWidth, viewHeight);
+
+  Point2<int> p0 = {(int)obj.transVertexList_[0].x_, (int)obj.transVertexList_[0].y_};
+  Point2<int> p1 = {(int)obj.transVertexList_[1].x_, (int)obj.transVertexList_[1].y_};
+  Point2<int> p2= {(int)obj.transVertexList_[2].x_, (int)obj.transVertexList_[2].y_};
+
+  renderer.drawLine2D({(int)obj.transVertexList_[3].x_, (int)obj.transVertexList_[3].y_}, {(int)obj.transVertexList_[4].x_, (int)obj.transVertexList_[4].y_}, Color(255, 0, 0));
+  renderer.drawLine2D({(int)obj.transVertexList_[5].x_, (int)obj.transVertexList_[5].y_}, {(int)obj.transVertexList_[6].x_, (int)obj.transVertexList_[6].y_}, Color(0, 255, 0));
+  renderer.drawLine2D({(int)obj.transVertexList_[7].x_, (int)obj.transVertexList_[7].y_}, {(int)obj.transVertexList_[8].x_, (int)obj.transVertexList_[8].y_}, Color(0, 0, 255));
+
+  renderer.drawTriangle2D(p0, p1, p2, Color(255, 0, 255));
+  //renderer.drawLine2D_Horizontal(Point2<int>(winWidth / 4, winHeight / 2), Point2<int>(winWidth / 2, winHeight / 2), Color(255, 0, 0));
+  //renderer.drawLine2D_Horizontal(Point2<int>(winWidth / 8, winHeight / 3), Point2<int>(winWidth / 2, winHeight / 3), Color(255, 0, 0));
+
+  //renderer.drawLine2D_Vertical(Point2<int>(winWidth / 5, winHeight / 4), Point2<int>(winWidth / 5, winHeight / 2), Color(255, 255, 0));
+  //renderer.drawLine2D_Vertical(Point2<int>(winWidth / 2, winHeight / 6), Point2<int>(winWidth / 2, winHeight / 3), Color(255, 0, 255));
+
+  //int randW = winWidth - 100;
+  //int randH = winHeight - 100;
+
+  //{
+  //  Point2<int> p0(rand() % randW, rand() % randH);
+  //  Point2<int> p1(rand() % randW, rand() % randH);
+  //  Point2<int> p2(rand() % randW, rand() % randH);
+
+  //  renderer.drawTriangle2D(p0, p1, p2, Color(255, 0, 255));
+  //}
+
+  //{
+  //  Point2<int> p0(rand() % randW, rand() % randH);
+  //  Point2<int> p1(rand() % randW, rand() % randH);
 
 
-    p0.y_ += 50;
-    p1.y_ += 50;
-    renderer.drawLine2D_DDA(p0, p1, Color(255, 0, 0));
+  //  p0.y_ += 50;
+  //  p1.y_ += 50;
+  //  renderer.drawLine2D_DDA(p0, p1, Color(255, 0, 0));
 
-    p0.y_ += 50;
-    p1.y_ += 50;
-    renderer.drawLine2D_Bresenham(p0, p1, Color(255, 0, 0));
+  //  p0.y_ += 50;
+  //  p1.y_ += 50;
+  //  renderer.drawLine2D_Bresenham(p0, p1, Color(255, 0, 0));
 
 
-    p0.y_ -= 100;
-    p1.y_ -= 100;
-  }
+  //  p0.y_ -= 100;
+  //  p1.y_ -= 100;
+  //}
 
 
 

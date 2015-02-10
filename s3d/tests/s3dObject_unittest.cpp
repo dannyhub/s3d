@@ -7,78 +7,32 @@
 
 using namespace s3d;
 
-void addToWorld(Object& obj, float x, float y, float z) {
-  Matrix4x4F translateMat = { 1, 0, 0, 0,
-                              0, 1, 0, 0,
-                              0, 0, 1, 0,
-                              x, y, z, 1 };
-
-  obj.setWorldPosition({x, y, z});
-  obj.transVertexList_.clear();
-  auto it = obj.localVertexList_.begin();
-  while (it != obj.localVertexList_.end()) {
-    const auto pt4 = *it;
-    obj.transVertexList_.push_back(pt4 * translateMat);
-    ++it;
-  }
-}
-
-void setCamera(Object& obj, Point4F pt, float anglex, float angley, float anglez) {
-  Matrix4x4F translateMat = { 1.f, 0, 0, 0,
-                              0, 1.f, 0, 0,
-                              0, 0, 1.f, 0,
-                              -pt.x_, -pt.y_, -pt.z_, 1.f};
-
-  //rotate with: YXZ
-  Matrix4x4F rotateYMat = {::cos(angley), 0, -::sin(angley), 0,
-                            0, 1.f, 0, 0,
-                            ::sin(angley), 0, ::cos(angley), 0,
-                            0, 0, 0, 1.f };
-
-  Matrix4x4F rotateXMat = { 1.f, 0, 0, 0,
-                            0, ::cos(anglex), -::sin(anglex), 0,
-                            0, ::sin(anglex), ::cos(anglex), 0,
-                            0, 0, 0, 1.f };
-
-
-  Matrix4x4F rotateZMat = {::cos(anglez), -::sin(anglez), 0, 0,
-                            ::sin(anglez), ::cos(anglez), 0, 0,
-                            0, 0, 1.f, 0,
-                            0, 0, 0, 1.f };
-
-  const auto mat = translateMat * rotateYMat  * rotateXMat ;
-  auto transVerit = obj.transVertexList_.begin();
-  while (transVerit != obj.transVertexList_.end()) {
-    *transVerit = *transVerit * translateMat * rotateYMat  * rotateXMat * rotateZMat;
-    ++transVerit;
-  }
-}
 
 BOOST_AUTO_TEST_CASE(s3dObject_unittest) {
 
   {
-    Point4<float> pt4 = {1,2,3};
-    Matrix4x4F mat = { 1.f, 0, 0, 0,
-                       0, 1.f, 0, 0,
-                       0, 0, 1.f, 0,
-                       0, 0, 0, 1.f };
+    Point4<double> pt4 = {1,2,3};
+    Matrix4x4FD mat = {1, 0, 0, 0,
+                       0, 1, 0, 0,
+                       0, 0, 1, 0,
+                       0, 0, 0, 1 };
    
     auto res = pt4 * mat;
     BOOST_CHECK(res == pt4);
 
-    mat *= 3.f;
-    mat[3][3] = 1.f;
+    mat *= 3;
+    mat[3][3] = 1;
     auto res2 = pt4 * mat;
-    BOOST_CHECK(res2 == pt4 * 3.f);
+    BOOST_CHECK(res2 == pt4 * 3);
 
   }
 
     {
-      Point4<float> pt4 = {1,2,3};
-      Matrix4x4F mat = { 1, 2, 2, 0,
+      Point4<double> pt4 = {1,2,3};
+      Matrix4x4FD mat = {1, 2, 2, 0,
                          2, 2, -2, 0,
                          3, 3, 3, 0,
-                         4, 4, 4, 1.f };
+                         4, 4, 4, 1};
    
       auto res = pt4 * mat;
       pt4.x_ = 18;
@@ -86,7 +40,7 @@ BOOST_AUTO_TEST_CASE(s3dObject_unittest) {
       pt4.z_ = 11;
       BOOST_CHECK(res == pt4);
 
-      Matrix1x4F mat1x4 = {1,2,3,1};
+      Matrix1x4FD mat1x4 = {1,2,3,1};
       auto res3 = mat1x4 * mat;
       BOOST_CHECK_EQUAL(res3.at(0,0), 18);
       BOOST_CHECK_EQUAL(res3.at(0, 1), 19);
@@ -95,40 +49,44 @@ BOOST_AUTO_TEST_CASE(s3dObject_unittest) {
   }
 
   Object obj(1, "testobj");
-  obj.addVertex({0,4,8});
-  obj.addVertex({4, -4, 8});
-  obj.addVertex({-4, -4, 8});
+  obj.addVertex({0,4,3});
+  obj.addVertex({4, -4, 3});
+  obj.addVertex({-4, -4, 3});
 
   obj.addPolygon({0, 1, 2});
 
-
-  addToWorld(obj, 100.f, 200.f, 300.f);
+  double wx = 100;
+  double wy = 200;
+  double wz = 1300;
+  addToWorld(obj, wx, wy, wz);
   {
     auto it = obj.localVertexList_.begin();
     auto transVerit = obj.transVertexList_.begin();
     while (transVerit != obj.transVertexList_.end()) {
       const auto pt = *it;
       const auto transpt = *transVerit;
-      BOOST_CHECK_EQUAL(transpt.x_, pt.x_ + 100.f);
-      BOOST_CHECK_EQUAL(transpt.y_, pt.y_ + 200.f);
-      BOOST_CHECK_EQUAL(transpt.z_, pt.z_ + 300.f);
-      BOOST_CHECK_EQUAL(transpt.w_, 1.f);
+      BOOST_CHECK_EQUAL(transpt.x_, pt.x_ + 100);
+      BOOST_CHECK_EQUAL(transpt.y_, pt.y_ + 200);
+      BOOST_CHECK_EQUAL(transpt.z_, pt.z_ + 1300);
+      BOOST_CHECK_EQUAL(transpt.w_, 1);
 
       ++it;
       ++transVerit;
     }
   }
 
-  float anglex = 10.f;
-  float angley = 20.f;
-  float anglez = 30.f;
+  double anglex = 0;
+  double angley = 0;
+  double anglez = 0;
 
-  setCamera(obj, {100.f, 200.f, 100.f}, anglex, angley, anglez);
+  setCamera(obj, {100, 200, 100}, anglex, angley, anglez);
   {
     //rotate with: YXZ
     anglex = -anglex;
     angley = -angley;
     anglez = -anglez;
+
+    double x, y, z;
 
     auto it = obj.localVertexList_.begin();
     auto transVerit = obj.transVertexList_.begin();
@@ -137,17 +95,15 @@ BOOST_AUTO_TEST_CASE(s3dObject_unittest) {
       const auto transpt = *transVerit;
 
       //ToWorld
-      pt.x_ += 100.f;
-      pt.y_ += 200.f;
-      pt.z_ += 300.f;
+      pt.x_ += wx;
+      pt.y_ += wy;
+      pt.z_ += wz;
 
       //to camera
-      pt.x_ -= 100.f;
-      pt.y_ -= 200.f;
-      pt.z_ -= 100.f;
+      pt.x_ -= 100;
+      pt.y_ -= 200;
+      pt.z_ -= 100;
 
-
-      float x,y,z;
       //y
       x = pt.x_ * cos(angley) - pt.z_ * sin(angley);
       z = pt.x_ * sin(angley) + pt.z_ * cos(angley);
@@ -166,21 +122,59 @@ BOOST_AUTO_TEST_CASE(s3dObject_unittest) {
       pt.x_ = x;
       pt.y_ = y;
 
-      BOOST_CHECK_EQUAL(transpt.x_, pt.x_);
-      BOOST_CHECK_EQUAL(transpt.y_, pt.y_);
-      BOOST_CHECK_EQUAL(transpt.z_, pt.z_);
-      BOOST_CHECK_EQUAL(transpt.w_, 1.f);
+      //BOOST_CHECK_EQUAL(transpt.x_, pt.x_);
+      //BOOST_CHECK_EQUAL(transpt.y_, pt.y_);
+      //BOOST_CHECK_EQUAL(transpt.z_, pt.z_);
+      //BOOST_CHECK_EQUAL(transpt.w_, 1);
 
-      //BOOST_CHECK(vector_impl::equalZero(transpt.x_ - pt.x_));
-      //BOOST_CHECK(vector_impl::equalZero(transpt.y_ - pt.y_));
-      //BOOST_CHECK(vector_impl::equalZero(transpt.z_ - pt.z_));
-      //BOOST_CHECK(vector_impl::equalZero(transpt.w_ - 1.f));
+      BOOST_CHECK(vector_impl::equalZero(transpt.x_ - pt.x_));
+      BOOST_CHECK(vector_impl::equalZero(transpt.y_ - pt.y_));
+      BOOST_CHECK(vector_impl::equalZero(transpt.z_ - pt.z_));
+      BOOST_CHECK(vector_impl::equalZero(transpt.w_ - 1));
 
       ++it;
       ++transVerit;
     }
   }
 
+  {
+    int viewWidth = 600;
+    int viewHeight = 600;
+
+    auto vervices = obj.transVertexList_;
+    projection(obj, viewWidth, viewHeight);
+
+    auto it = vervices.begin();
+    auto transVerit = obj.transVertexList_.begin();
+
+    //nearsZ = 1
+    //widthHeightRate = viewWidth / viewHeight
+    //px = x / z, [-1,1]
+    //py = y / z, [-1,1]
+
+    //vx = (px + 1)  * (viewWidth-1) / 2 = (px + 1)  * ((viewWidth/2) - 1/2)
+    //vy = (viewHeight - 1) - (py + 1)  * (viewHeight-1) / 2 = (viewHeight - 1) - (py + 1)  * ((viewHeight/2) - 1/2)
+    while (it != vervices.end()) {
+      auto pt = *it;
+      const double px = (double)pt.x_ / pt.z_;// [-1,1]
+      const double py = (double)pt.y_ / pt.z_;// [-1, 1]
+
+      const auto xr = (double)viewWidth / 2. - 0.5;
+      const auto yr = (double)viewHeight / 2. - 0.5;
+
+      const double vx = px * xr + xr;
+      const double vy = double(viewHeight - 1) - py * yr - yr;
+      BOOST_CHECK(vx >= 0 && vx < viewWidth);
+      BOOST_CHECK(vy >= 0 && vy < viewHeight);
+
+      BOOST_CHECK_EQUAL(transVerit->y_, vy);
+      BOOST_CHECK(vector_impl::equalZero(transVerit->x_ - vx));
+      //BOOST_CHECK(vector_impl::equalZero(transVerit->y_ - vy));
+      ++it;
+      ++transVerit;
+    }
+
+  }
 
 
 }

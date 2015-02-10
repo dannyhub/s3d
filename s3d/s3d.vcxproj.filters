@@ -104,9 +104,6 @@
     <ClCompile Include="math\tests\vector_unittest.cpp">
       <Filter>Source Files\math\tests</Filter>
     </ClCompile>
-    <ClCompile Include="math\Matrix.cpp">
-      <Filter>Source Files\math</Filter>
-    </ClCompile>
     <ClCompile Include="math\tests\geometry_unittest.cpp">
       <Filter>Source Files\math\tests</Filter>
     </ClCompile>
