@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(s3dObject_unittest) {
     int viewHeight = 600;
 
     auto vervices = obj.transVertexList_;
-    projection(obj, viewWidth, viewHeight);
+    perspectiveProject(obj, viewWidth, viewHeight);
 
     auto it = vervices.begin();
     auto transVerit = obj.transVertexList_.begin();

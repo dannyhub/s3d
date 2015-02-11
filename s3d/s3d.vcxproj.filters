@@ -78,6 +78,9 @@
     <ClInclude Include="VertexList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="math\Math.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

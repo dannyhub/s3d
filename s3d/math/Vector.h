@@ -131,6 +131,16 @@ public:
 
   T length() const;
   Vector4 normalize() const;
+  void normalizeSelf() {
+    const T len = this->length();
+    if (vector_impl::equalZero(len)) {
+      throw VectorDivideZeroException("Vector4 length is zero");
+    }
+
+    x_ /= len;
+    y_ /= len;
+    z_ /= len;
+  }
 
   T dotProduct(const Vector4& v) const;
   T cos(const Vector4& v) const;
@@ -357,9 +367,9 @@ template<typename T>
 Vector3<T> Vector3<T>::crossProduct(const Vector3<T>& v2) const {
   Vector3<T> vn;
 
-  vn.x_ = ((this->y_ * v2->z_) - (this->z_ * v2->y_));
-  vn.y_ = -((this->x_ * v2->z_) - (this->z_ * v2->x_));
-  vn.z_ = ((this->x_ * v2->y_) - (this->y_ * v2->x_));
+  vn.x_ = ((this->y_ * v2.z_) - (this->z_ * v2.y_));
+  vn.y_ = -((this->x_ * v2.z_) - (this->z_ * v2.x_));
+  vn.z_ = ((this->x_ * v2.y_) - (this->y_ * v2.x_));
 
   return vn;
 }
@@ -467,9 +477,9 @@ template<typename T>
 Vector4<T> Vector4<T>::crossProduct(const Vector4<T>& v2) const {
   Vector4<T> vn;
 
-  vn.x_ = ((this->y_ * v2->z_) - (this->z_ * v2->y_));
-  vn.y_ = -((this->x_ * v2->z_) - (this->z_ * v2->x_));
-  vn.z_ = ((this->x_ * v2->y_) - (this->y_ * v2->x_));
+  vn.x_ = ((this->y_ * v2.z_) - (this->z_ * v2.y_));
+  vn.y_ = -((this->x_ * v2.z_) - (this->z_ * v2.x_));
+  vn.z_ = ((this->x_ * v2.y_) - (this->y_ * v2.x_));
 
   return vn;
 }

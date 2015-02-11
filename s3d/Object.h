@@ -37,7 +37,12 @@ public:
   }
 
   void addPolygon(const PolygonType& p) {
-    polygons_.push_back(p);
+    const auto v0 = localVertexList_[p.at(1)] - localVertexList_[p.at(0)];
+    const auto v1 = localVertexList_[p.at(2)] - localVertexList_[p.at(0)];
+
+    PolygonType padded = p;
+    padded.normal_ = v0.crossProduct(v1).normalize();
+    polygons_.push_back(padded);
   }
 
   void setWorldPosition(const PointType& pt) {
@@ -46,6 +51,10 @@ public:
 
   VertexListType localVertexList_;
   VertexListType transVertexList_;
+  std::vector<PolygonType> polygons_;
+  std::vector<PolygonType> transPolygons_;
+
+  PointType worldPosition_;
 
 private:
   int id_;
@@ -54,11 +63,10 @@ private:
   float maxRadius_;
   float averageRadius_;
 
-  PointType worldPosition_;
+ 
   VectorType direction_;
 
   VectorType ux_, uy_, yz_;
-  std::vector<PolygonType> polygons_;
 
 };
 
@@ -83,7 +91,12 @@ inline Point4<T> operator * (Point4<T> pt4, const Matrix<T, 4U, 4U>& m1) {
 
 void addToWorld(Object& obj, double x, double y, double z);
 
-void setCamera(Object& obj, Point4FD pt, double anglex, double angley, double anglez);
+void backFaceRemove(Object& obj, const Point4FD& viewLine, double farZ = 1000);
 
-void projection(Object& obj, int viewWidth, int viewHeight);
+void setCamera(Object& obj, const Point4FD& pt, double anglex, double angley, double anglez);
+
+//perspective projection with viewing distance 1 and viewing angle 90
+void perspectiveProject(Object& obj, double viewWidth, double viewHeight);
+
+void perspectiveProject(Object& obj, double fieldOfViewDegree, double viewWidth, double viewHeight);
 }// s3d

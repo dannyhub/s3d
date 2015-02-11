@@ -54,13 +54,13 @@ Window::~Window() {
   assert(hWnd_ == NULL);
 }
 
-static double anglex = 0 * 3.1415927 / 180;;
+static double anglex = -0 * 3.1415927 / 180;;
 static double angley = 0 * 3.1415927 / 180;
 static double anglez = 0 * 3.1415927 / 180;
 
 double wx = 0;
 double wy = 0;
-double wz = 400;
+double wz = 300;
 
 double cx = 0;
 double cy = 0;
@@ -222,44 +222,91 @@ void Window::needRedraw() {
 void Window::onDraw(Renderer& renderer) {
   // for (int i = 0; i<1000; ++i)
   // renderer.drawLine2D_DDA(Point2<int>(rand() % 1024, rand() % 1024), Point2<int>(rand() % rand() % 1024, 230), Color(rand() % 255, rand() % 255, rand() % 255));
-  //RECT rect;
-  //::GetWindowRect(hWnd_, &rect);
-  //const int winWidth = rect.right - rect.left + 1;
-  //const int winHeight = rect.bottom - rect.top + 1;
+  RECT rect;
+  ::GetWindowRect(hWnd_, &rect);
+  const int winWidth = rect.right - rect.left + 1;
+  const int winHeight = rect.bottom - rect.top + 1;
 
   Object obj(1, "testobj");
-  obj.addVertex({0, 40, 30});
-  obj.addVertex({40, -40, 30});
-  obj.addVertex({-40, -40, 30});
 
-  obj.addVertex({-150, 0, 0});
-  obj.addVertex({150, 0, 0});
+  obj.addVertex({10, 10, 10}); // p0
+  obj.addVertex({-10, 10, 10}); // p1
+  obj.addVertex({-10, 10, -10});// p2
+  obj.addVertex({10, 10, -10}); // p3
+  obj.addVertex({10, -10, 10}); // p4
+  obj.addVertex({-10, -10, 10}); // p5
+  obj.addVertex({-10, -10, -10}); // p6
+  obj.addVertex({10, -10, -10});// p7
 
-  obj.addVertex({0, -150, 0});
-  obj.addVertex({0, 150, 0});
+  //obj.addVertex({0, 40, 30});
+  //obj.addVertex({40, -40, 30});
+  //obj.addVertex({-40, -40, 30});
 
-  obj.addVertex({0, 0, -150});
-  obj.addVertex({0, 0, 150});
+  obj.addVertex({-50, 0, 0});
+  obj.addVertex({50, 0, 0});
 
-  obj.addPolygon({0, 1, 2});
+  obj.addVertex({0, -50, 0});
+  obj.addVertex({0, 50, 0});
+
+  obj.addVertex({0, 0, 50});
+  obj.addVertex({0, 0, -50});
+
+  unsigned int temp_poly_indices[12 * 3] = {
+    0, 1, 2, 0, 2, 3, // polygons 0 and 1
+    3, 0, 4, 3, 7, 4, // polygons 2 and 3
+    2, 1, 5, 2, 6, 5, // polygons 4 and 5
+    2, 3, 6, 3, 7, 6, // polygons 6 and 7
+    1, 0, 5, 0, 4, 5, // polygons 8 and 9
+    5, 4, 6, 4, 7, 6}; // polygons 10 and 11
+
+  for (int i = 0; i < 12 * 3; i += 3) {
+    int id = temp_poly_indices[i];
+    Point2<int> p0 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
+
+    id = temp_poly_indices[i + 1];
+    Point2<int> p1 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
+
+    id = temp_poly_indices[i + 2];
+    Point2<int> p2 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
+    
+    obj.addPolygon({temp_poly_indices[i], temp_poly_indices[i+1], temp_poly_indices[i+2]});
+  }
+
+  
 
   addToWorld(obj, wx, wy, wz);
 
   setCamera(obj, {cx, cy, cz}, -anglex, -angley, -anglez);
-  int viewWidth = 600;
-  int viewHeight = 600;
+  int viewWidth = winWidth;
+  int viewHeight = winHeight;
 
-  projection(obj, viewWidth, viewHeight);
+ // perspectiveProject(obj, viewWidth, viewHeight);
+  perspectiveProject(obj, 90, viewWidth, viewHeight);
 
-  Point2<int> p0 = {(int)obj.transVertexList_[0].x_, (int)obj.transVertexList_[0].y_};
-  Point2<int> p1 = {(int)obj.transVertexList_[1].x_, (int)obj.transVertexList_[1].y_};
-  Point2<int> p2= {(int)obj.transVertexList_[2].x_, (int)obj.transVertexList_[2].y_};
+  for (auto itp : obj.transPolygons_) {
+    int id = itp[0];
+    Point2<int> p0 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
 
-  renderer.drawLine2D({(int)obj.transVertexList_[3].x_, (int)obj.transVertexList_[3].y_}, {(int)obj.transVertexList_[4].x_, (int)obj.transVertexList_[4].y_}, Color(255, 0, 0));
-  renderer.drawLine2D({(int)obj.transVertexList_[5].x_, (int)obj.transVertexList_[5].y_}, {(int)obj.transVertexList_[6].x_, (int)obj.transVertexList_[6].y_}, Color(0, 255, 0));
-  renderer.drawLine2D({(int)obj.transVertexList_[7].x_, (int)obj.transVertexList_[7].y_}, {(int)obj.transVertexList_[8].x_, (int)obj.transVertexList_[8].y_}, Color(0, 0, 255));
+    id = itp[1];
+    Point2<int> p1 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
 
-  renderer.drawTriangle2D(p0, p1, p2, Color(255, 0, 255));
+    id = itp[2];
+    Point2<int> p2 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
+    renderer.drawTriangle2D(p0, p1, p2, Color(255, 0, 255));
+  }
+
+
+  int linestart = 8;
+  renderer.drawLine2D({(int)obj.transVertexList_[linestart].x_, (int)obj.transVertexList_[linestart].y_}, {(int)obj.transVertexList_[linestart + 1].x_, (int)obj.transVertexList_[linestart+1].y_}, Color(255, 0, 0));
+  
+  linestart = 10;
+  renderer.drawLine2D({(int)obj.transVertexList_[linestart].x_, (int)obj.transVertexList_[linestart].y_}, {(int)obj.transVertexList_[linestart + 1].x_, (int)obj.transVertexList_[linestart + 1].y_}, Color(255, 0, 0));
+
+  linestart = 12;
+  renderer.drawLine2D({(int)obj.transVertexList_[linestart].x_, (int)obj.transVertexList_[linestart].y_}, {(int)obj.transVertexList_[linestart + 1].x_, (int)obj.transVertexList_[linestart + 1].y_}, Color(0, 255, 0));
+
+
+  
   //renderer.drawLine2D_Horizontal(Point2<int>(winWidth / 4, winHeight / 2), Point2<int>(winWidth / 2, winHeight / 2), Color(255, 0, 0));
   //renderer.drawLine2D_Horizontal(Point2<int>(winWidth / 8, winHeight / 3), Point2<int>(winWidth / 2, winHeight / 3), Color(255, 0, 0));
 

@@ -128,8 +128,8 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="Math.h" />
     <ClInclude Include="math\Geometry.h" />
-    <ClInclude Include="math\Math.h" />
     <ClInclude Include="math\Matrix.h" />
     <ClInclude Include="math\Point.h" />
     <ClInclude Include="math\Vector.h" />
