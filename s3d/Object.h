@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace s3d
 {
@@ -41,7 +42,8 @@ public:
     const auto v1 = localVertexList_[p.at(2)] - localVertexList_[p.at(0)];
 
     PolygonType padded = p;
-    padded.normal_ = v0.crossProduct(v1).normalize();
+    padded.normal_ = v0.crossProduct(v1);
+    //padded.normal_.normalizeSelf();
     polygons_.push_back(padded);
   }
 
@@ -70,6 +72,8 @@ private:
 
 };
 
+typedef std::shared_ptr<Object> ObjectPtr;
+
 template<typename T>
 inline Point4<T> operator * (Point4<T> pt4, const Matrix<T, 4U, 4U>& m1) {
   Point4<T> ptRes;
@@ -89,6 +93,8 @@ inline Point4<T> operator * (Point4<T> pt4, const Matrix<T, 4U, 4U>& m1) {
   return ptRes;
 }
 
+Matrix4x4FD buildRotateMatrix4x4(double anglex, double angley, double anglez);
+
 void addToWorld(Object& obj, double x, double y, double z);
 
 void backFaceRemove(Object& obj, const Point4FD& viewLine, double farZ = 1000);
@@ -99,4 +105,6 @@ void setCamera(Object& obj, const Point4FD& pt, double anglex, double angley, do
 void perspectiveProject(Object& obj, double viewWidth, double viewHeight);
 
 void perspectiveProject(Object& obj, double fieldOfViewDegree, double viewWidth, double viewHeight);
+
+
 }// s3d

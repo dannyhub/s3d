@@ -8,6 +8,15 @@
 
 namespace s3d
 {
+
+enum PolygonState {
+  kPolygonStateInvalid,
+  kPolygonStateVisible,
+  kPolygonStateClipped,
+  kPolygonStateBackface,
+  kPolygonState2Side
+};
+
 template<size_t VertexNum>
 class Polygon {
 public:
@@ -71,8 +80,8 @@ private:
   Vector4FD n_;
 
   int id;
-  int state;
-  int attr;
+ 
+  PolygonState state;
 };
 
 }// s3d

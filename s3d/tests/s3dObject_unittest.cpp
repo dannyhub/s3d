@@ -1,5 +1,5 @@
 #include "../Object.h"
-
+#include "../math/Math.h"
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>

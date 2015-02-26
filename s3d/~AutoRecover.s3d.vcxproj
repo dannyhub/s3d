@@ -126,10 +126,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Graphics.h" />
-    <ClInclude Include="Math.h" />
     <ClInclude Include="math\Geometry.h" />
+    <ClInclude Include="math\Math.h" />
     <ClInclude Include="math\Matrix.h" />
     <ClInclude Include="math\Point.h" />
     <ClInclude Include="math\Vector.h" />
@@ -142,9 +143,11 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="VertexList.h" />
     <ClInclude Include="Window.h" />
+    <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="math\tests\geometry_unittest.cpp" />
@@ -161,6 +164,7 @@
     <ClCompile Include="tests\s3dObject_unittest.cpp" />
     <ClCompile Include="tests\Window_unitest.cpp" />
     <ClCompile Include="Window.cpp" />
+    <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="s3d.rc" />

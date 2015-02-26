@@ -119,6 +119,9 @@ public:
   Vector4(T x, T y, T z) : x_(x), y_(y), z_(z), w_(T(1)) {
   }
 
+  explicit Vector4(const Vector3<T>& v3) : x_(v3.x_), y_(v3.y_), z_(v3.z_), w_(T(1)) {
+  }
+
   Vector4(const std::initializer_list<T>& ilist) {
     assert(ilist.size() == 3);
 

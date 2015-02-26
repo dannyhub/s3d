@@ -128,30 +128,30 @@ void Renderer::drawPixel2D(const Point2<int>& p0, const Color& c) {
 
 void Renderer::drawLine2D(const Point2<int>& p0, const Point2<int>& p1, const Color& c) {
   Point2<int> cp0 = p0;
-  if (cp0.x_ < 0) 
-    cp0.x_ = 0;
+  //if (cp0.x_ < 0) 
+  //  cp0.x_ = 0;
 
-  if (cp0.y_ < 0)
-    cp0.y_ = 0;
+  //if (cp0.y_ < 0)
+  //  cp0.y_ = 0;
 
-  if (cp0.x_ >= buffer_.getWidth())
-    cp0.x_ = buffer_.getWidth()-1;
+  //if (cp0.x_ >= buffer_.getWidth())
+  //  cp0.x_ = buffer_.getWidth()-1;
 
-  if (cp0.y_ >= buffer_.getHeight())
-    cp0.y_ = buffer_.getHeight() - 1;
+  //if (cp0.y_ >= buffer_.getHeight())
+  //  cp0.y_ = buffer_.getHeight() - 1;
 
   Point2<int> cp1 = p1;
-  if (cp1.x_ < 0)
-    cp1.x_ = 0;
+  //if (cp1.x_ < 0)
+  //  cp1.x_ = 0;
 
-  if (cp1.y_ < 0)
-    cp1.y_ = 0;
+  //if (cp1.y_ < 0)
+  //  cp1.y_ = 0;
 
-  if (cp1.x_ >= buffer_.getWidth())
-    cp1.x_ = buffer_.getWidth() - 1;
+  //if (cp1.x_ >= buffer_.getWidth())
+  //  cp1.x_ = buffer_.getWidth() - 1;
 
-  if (cp1.y_ >= buffer_.getHeight())
-    cp1.y_ = buffer_.getHeight() - 1;
+  //if (cp1.y_ >= buffer_.getHeight())
+  //  cp1.y_ = buffer_.getHeight() - 1;
 
   if (cp1.x_ == cp0.x_) {
     drawLine2D_Vertical(cp0, cp1, c);

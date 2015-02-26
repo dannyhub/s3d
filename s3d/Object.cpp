@@ -7,9 +7,9 @@ namespace s3d
 
   void addToWorld(Object& obj, double x, double y, double z) {
     Matrix4x4FD translateMat = {1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      x, y, z, 1};
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                x, y, z, 1};
 
     obj.setWorldPosition({x, y, z});
     obj.transVertexList_.clear();
@@ -21,12 +21,42 @@ namespace s3d
     }
   }
 
-  void backFaceRemove(Object& obj, const Point4FD& viewLine, double farZ) {
+  void backFaceRemove(Object& obj, const Point4FD& viewLine, double /*farZ*/) {
     for (auto itp : obj.polygons_) {
       //if (itp.normal_.dotProduct(viewLine) > 0.) {
         obj.transPolygons_.push_back(itp);
       //}
     }
+  }
+
+  Matrix4x4FD buildRotateMatrix4x4(double anglex, double angley, double anglez) {
+    const auto cosx = ::cos(anglex);
+    const auto sinx = ::sin(anglex);
+
+    const auto cosy = ::cos(angley);
+    const auto siny = ::sin(angley);
+
+    const auto cosz = ::cos(anglez);
+    const auto sinz = ::sin(anglez);
+
+    //rotate with: YXZ
+    Matrix4x4FD rotateYMat = {cosy, 0, -siny, 0,
+                              0,    1,  0,    0,
+                              siny, 0,  cosy, 0,
+                              0,    0,   0,   1};
+
+    Matrix4x4FD rotateXMat = {1, 0,     0,    0,
+                              0, cosx, -sinx, 0,
+                              0, sinx,  cosx, 0,
+                              0, 0,     0,    1};
+
+
+    Matrix4x4FD rotateZMat = {cosz, -sinz, 0, 0,
+                              sinz,  cosz, 0, 0,
+                              0,     0,    1, 0,
+                              0,     0,    0, 1};
+
+   return rotateYMat  * rotateXMat * rotateZMat;
   }
 
   void setCamera(Object& obj, const Point4FD& pt, double anglex, double angley, double anglez) {

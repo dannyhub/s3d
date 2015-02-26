@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "Object.h"
+#include "Camera.h"
 
 using namespace std;
 
@@ -60,7 +61,7 @@ static double anglez = 0 * 3.1415927 / 180;
 
 double wx = 0;
 double wy = 0;
-double wz = 300;
+double wz = 100;
 
 double cx = 0;
 double cy = 0;
@@ -160,10 +161,14 @@ LRESULT Window::wndProc(UINT message, WPARAM wParam, LPARAM lParam) {
 
       uint32_t* buffer = NULL;
       HBITMAP hBmp = CreateDIBSection(hMemDC, &bmi, DIB_RGB_COLORS, (void**)&buffer, NULL, NULL);
-      std::fill(buffer, buffer + winWidth * winHeight, RGB(255, 255, 255));
+      std::fill(buffer, buffer + winWidth * winHeight, RGB(0, 0, 0));
 
       s3d::Renderer renderer(buffer, winWidth, winHeight);
-      this->onDraw(renderer); 
+      try {
+        this->onDraw(renderer);
+      } catch (...) {
+      }
+      
       HGDIOBJ oldObj = SelectObject(hMemDC, hBmp);
       BitBlt(hdc, 0, 0, winWidth, winHeight, hMemDC, 0, 0, SRCCOPY);
 
@@ -229,35 +234,35 @@ void Window::onDraw(Renderer& renderer) {
 
   Object obj(1, "testobj");
 
-  obj.addVertex({10, 10, 10}); // p0
-  obj.addVertex({-10, 10, 10}); // p1
-  obj.addVertex({-10, 10, -10});// p2
-  obj.addVertex({10, 10, -10}); // p3
-  obj.addVertex({10, -10, 10}); // p4
-  obj.addVertex({-10, -10, 10}); // p5
-  obj.addVertex({-10, -10, -10}); // p6
-  obj.addVertex({10, -10, -10});// p7
+  obj.addVertex({5, 5, 5}); // p0
+  obj.addVertex({-5, 5, 5}); // p1
+  obj.addVertex({-5, 5, -5});// p2
+  obj.addVertex({5, 5, -5}); // p3
+  obj.addVertex({5, -5, 5}); // p4
+  obj.addVertex({-5, -5, 5}); // p5
+  obj.addVertex({-5, -5, -5}); // p6
+  obj.addVertex({5, -5, -5});// p7
 
   //obj.addVertex({0, 40, 30});
   //obj.addVertex({40, -40, 30});
   //obj.addVertex({-40, -40, 30});
 
-  obj.addVertex({-50, 0, 0});
-  obj.addVertex({50, 0, 0});
+  obj.addVertex({-10, 0, 0});
+  obj.addVertex({10, 0, 0});
 
-  obj.addVertex({0, -50, 0});
-  obj.addVertex({0, 50, 0});
+  obj.addVertex({0, -10, 0});
+  obj.addVertex({0, 10, 0});
 
-  obj.addVertex({0, 0, 50});
-  obj.addVertex({0, 0, -50});
+  obj.addVertex({0, 0, 10});
+  obj.addVertex({0, 0, -10});
 
   unsigned int temp_poly_indices[12 * 3] = {
     0, 1, 2, 0, 2, 3, // polygons 0 and 1
-    3, 0, 4, 3, 7, 4, // polygons 2 and 3
-    2, 1, 5, 2, 6, 5, // polygons 4 and 5
-    2, 3, 6, 3, 7, 6, // polygons 6 and 7
-    1, 0, 5, 0, 4, 5, // polygons 8 and 9
-    5, 4, 6, 4, 7, 6}; // polygons 10 and 11
+    0, 7, 4, 0, 3, 7, // polygons 2 and 3
+    4, 7, 6, 4, 6, 5, // polygons 4 and 5
+    1, 6, 2, 1, 5, 6, // polygons 6 and 7
+    3, 6, 7, 3, 2, 6, // polygons 8 and 9
+    0, 4, 5, 1, 5, 0}; // polygons 10 and 11
 
   for (int i = 0; i < 12 * 3; i += 3) {
     int id = temp_poly_indices[i];
@@ -272,16 +277,50 @@ void Window::onDraw(Renderer& renderer) {
     obj.addPolygon({temp_poly_indices[i], temp_poly_indices[i+1], temp_poly_indices[i+2]});
   }
 
-  
+  auto rotateMat = buildRotateMatrix4x4(-anglex, -angley, -anglez);
+  for (auto& v : obj.localVertexList_) {
+    v = (v * rotateMat);
+  }
 
+  for (auto& itp : obj.polygons_) {
+    itp.normal_ = itp.normal_ * rotateMat;
+    //itp.normal_.normalizeSelf();
+  }
+ 
   addToWorld(obj, wx, wy, wz);
 
-  setCamera(obj, {cx, cy, cz}, -anglex, -angley, -anglez);
+
   int viewWidth = winWidth;
   int viewHeight = winHeight;
 
- // perspectiveProject(obj, viewWidth, viewHeight);
-  perspectiveProject(obj, 90, viewWidth, viewHeight);
+  auto camera = createUVNCamera({0, 0, -50}, {cx, cy, cz + 300}, 120, 1, 1000, viewWidth, winHeight);
+  auto mat = camera->buildWorldToScreenMatrix4x4FD();
+
+  auto transVerit = obj.transVertexList_.begin();
+  while (transVerit != obj.transVertexList_.end()) {
+    const auto pt = *transVerit;
+    *transVerit = pt * mat;
+    ++transVerit;
+  }
+
+  for (auto& itp : obj.polygons_) {
+    itp.normal_.x_ += wx;
+    itp.normal_.y_ += wy;
+    itp.normal_.z_ += wz;
+
+    itp.normal_ = itp.normal_ * camera->buildWorldToCameraMatrix4x4FD();
+    //itp.normal_.normalizeSelf();
+  }
+  //setCamera(obj, {cx, cy, cz}, -0, -0, -0);
+
+  for (auto& itp : obj.polygons_) {
+    if (!camera->isBackFace(itp.normal_)) {
+      obj.transPolygons_.push_back(itp);
+    }
+     
+  }
+  //perspectiveProject(obj, viewWidth, viewHeight);
+  //perspectiveProject(obj, 90, viewWidth, viewHeight);
 
   for (auto itp : obj.transPolygons_) {
     int id = itp[0];
@@ -292,7 +331,7 @@ void Window::onDraw(Renderer& renderer) {
 
     id = itp[2];
     Point2<int> p2 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
-    renderer.drawTriangle2D(p0, p1, p2, Color(255, 0, 255));
+    renderer.drawTriangle2D(p0, p1, p2, Color(0xc0, 0xf0, 0));
   }
 
 

@@ -37,6 +37,7 @@ public:
   }
 
   T at (size_type index) {
+    assert(index < vertices.size());
     return vertices.at(index);
   }
 

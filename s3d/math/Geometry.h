@@ -391,12 +391,15 @@ bool intersect(const LineParametric3D<T>& la, const LineParametric3D<T>& lb, Poi
 //p = n_.x * X.x + n_.y * X.y + n_.z * X.z + D
 
 template <typename T>
-class Plane {
+class Plane3D {
 public:
   Point3<T> point_;
   Vector3<T> n_;
 
-  Plane(const Point3<T>& p, const Vector3& n, bool normalize = false) : point_(p), n_(n) {
+  Plane3D() {
+  }
+
+  Plane3D(const Point3<T>& p, const Vector3<T>& n, bool normalize = false) : point_(p), n_(n) {
     if (normalize)
       n_.normalizeSelf();
   }
@@ -439,19 +442,19 @@ bool isIntersectYZ(const LineParametric3D<T>& line) {
 }
 
 template <typename T>
-inline bool isPointInPlane(const Plane<T>& plane, const Vector3<T>& X) {
+inline bool isPointInPlane(const Plane3D<T>& plane, const Vector3<T>& X) {
   const auto s = plane.n_.x * (X.x - plane.point_.x) + n_.y * (X.y - plane.point_.y) + n_.z * (X.z - plane.point_.z);
   return vector_impl::equalZero(s);
 }
 
 template <typename T>
-inline bool isPointOnPlanePositiveSide(const Plane<T>& plane, const Vector3<T>& X) {
+inline bool isPointOnPlanePositiveSide(const Plane3D<T>& plane, const Vector3<T>& X) {
   const auto s = plane.n_.x * (X.x - plane.point_.x) + n_.y * (X.y - plane.point_.y) + n_.z * (X.z - plane.point_.z);
   return s > T(0);
 }
 
 template <typename T>
-inline bool isPointOnPlaneNegativeSide(const Plane<T>& plane, const Vector3<T>& X) {
+inline bool isPointOnPlaneNegativeSide(const Plane3D<T>& plane, const Vector3<T>& X) {
   const auto s = plane.n_.x * (X.x - plane.point_.x) + n_.y * (X.y - plane.point_.y) + n_.z * (X.z - plane.point_.z);
   return s < T(0);
 }
@@ -459,7 +462,7 @@ inline bool isPointOnPlaneNegativeSide(const Plane<T>& plane, const Vector3<T>& 
 //D = (-n_.x * point_.x + -n_.y * point_.y + -n_.z * point_.z)
 //p = n_.x * X.x + n_.y * X.y + n_.z * X.z + D
 template <typename T>
-bool isPlaneIntersect(const Plane<T>& la, const Plane<T>& lb) {
+bool isPlaneIntersect(const Plane3D<T>& la, const Plane3D<T>& lb) {
   return false;
 }
 
@@ -477,7 +480,7 @@ bool isPlaneIntersect(const Plane<T>& la, const Plane<T>& lb) {
 
 //t1 = -(plane.n_.x * line.point_.x + plane.n_.y * line.point_.y + plane.n_.z * line.point_.z + D) / (plane.n_.x * line.vector_.x + plane.n_.y * line.vector_.y + plane.n_.z * line.vector_.z)
 template <typename T>
-bool isIntersect(const Plane<T>& plane, const LineParametric3D<T>& line) {
+bool isIntersect(const Plane3D<T>& plane, const LineParametric3D<T>& line) {
   const auto planeDotLine = plane.n_.dotProduct(line.vector_);
   if (vector_impl::equalZero(planeDotLine)) {
     if (isPointInPlane(plane, line)) {
@@ -497,7 +500,7 @@ bool isIntersect(const Plane<T>& plane, const LineParametric3D<T>& line) {
 }
 
 template <typename T>
-inline bool isIntersect(const LineParametric3D<T>& line, const Plane<T>& plane) {
+inline bool isIntersect(const LineParametric3D<T>& line, const Plane3D<T>& plane) {
   return isIntersect(line, plane);
 }
 
