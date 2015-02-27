@@ -6,6 +6,7 @@
 
 #include "Object.h"
 #include "Camera.h"
+#include "PLGLoader.h"
 
 using namespace std;
 
@@ -234,14 +235,31 @@ void Window::onDraw(Renderer& renderer) {
 
   Object obj(1, "testobj");
 
-  obj.addVertex({5, 5, 5}); // p0
-  obj.addVertex({-5, 5, 5}); // p1
-  obj.addVertex({-5, 5, -5});// p2
-  obj.addVertex({5, 5, -5}); // p3
-  obj.addVertex({5, -5, 5}); // p4
-  obj.addVertex({-5, -5, 5}); // p5
-  obj.addVertex({-5, -5, -5}); // p6
-  obj.addVertex({5, -5, -5});// p7
+  PLGLoader plgloader;
+  try {
+    std::string name; 
+    VertexList<Point4<double>> vlist;
+    std::vector<Polygon<3>> polys;
+    plgloader.parse("D:\\work\\t3dlib\\T3DIICHAP07\\cube2.plg", name, vlist, polys);
+
+    for (auto pt : vlist) {
+      obj.addVertex(pt);
+    }
+
+    for (auto poly : polys) {
+      obj.addPolygon(poly);
+    }
+
+  } catch (...) {
+  }
+  //obj.addVertex({5, 5, 5}); // p0
+  //obj.addVertex({-5, 5, 5}); // p1
+  //obj.addVertex({-5, 5, -5});// p2
+  //obj.addVertex({5, 5, -5}); // p3
+  //obj.addVertex({5, -5, 5}); // p4
+  //obj.addVertex({-5, -5, 5}); // p5
+  //obj.addVertex({-5, -5, -5}); // p6
+  //obj.addVertex({5, -5, -5});// p7
 
   //obj.addVertex({0, 40, 30});
   //obj.addVertex({40, -40, 30});
@@ -262,30 +280,30 @@ void Window::onDraw(Renderer& renderer) {
     4, 7, 6, 4, 6, 5, // polygons 4 and 5
     1, 6, 2, 1, 5, 6, // polygons 6 and 7
     3, 6, 7, 3, 2, 6, // polygons 8 and 9
-    0, 4, 5, 1, 5, 0}; // polygons 10 and 11
+    0, 4, 5, 0, 1, 5}; // polygons 10 and 11
 
-  for (int i = 0; i < 12 * 3; i += 3) {
-    int id = temp_poly_indices[i];
-    Point2<int> p0 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
+  //for (int i = 0; i < 1/*12 * 3*/; i += 3) {
+  //  int id = temp_poly_indices[i];
+  //  Point2<int> p0 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
 
-    id = temp_poly_indices[i + 1];
-    Point2<int> p1 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
+  //  id = temp_poly_indices[i + 1];
+  //  Point2<int> p1 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
 
-    id = temp_poly_indices[i + 2];
-    Point2<int> p2 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
-    
-    obj.addPolygon({temp_poly_indices[i], temp_poly_indices[i+1], temp_poly_indices[i+2]});
-  }
+  //  id = temp_poly_indices[i + 2];
+  //  Point2<int> p2 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
+  //  
+  //  obj.addPolygon({temp_poly_indices[i], temp_poly_indices[i+1], temp_poly_indices[i+2]});
+  //}
 
   auto rotateMat = buildRotateMatrix4x4(-anglex, -angley, -anglez);
   for (auto& v : obj.localVertexList_) {
     v = (v * rotateMat);
   }
 
-  for (auto& itp : obj.polygons_) {
-    itp.normal_ = itp.normal_ * rotateMat;
-    //itp.normal_.normalizeSelf();
-  }
+  //for (auto& itp : obj.polygons_) {
+  //  itp.normal_ = itp.normal_ * rotateMat;
+  //  //itp.normal_.normalizeSelf();
+  //}
  
   addToWorld(obj, wx, wy, wz);
 
@@ -293,8 +311,22 @@ void Window::onDraw(Renderer& renderer) {
   int viewWidth = winWidth;
   int viewHeight = winHeight;
 
-  auto camera = createUVNCamera({0, 0, -50}, {cx, cy, cz + 300}, 120, 1, 1000, viewWidth, winHeight);
-  auto mat = camera->buildWorldToScreenMatrix4x4FD();
+  auto camera = createUVNCamera({0, 0, -500}, {cx, cy, cz + 300}, 90, 1, 1000, viewWidth, winHeight);
+
+  for (auto& itp : obj.polygons_) {
+    const auto u = obj.transVertexList_[itp.at(1)] - obj.transVertexList_[itp.at(0)];
+    const auto v = obj.transVertexList_[itp.at(2)] - obj.transVertexList_[itp.at(0)];
+
+    itp.normal_ = u.crossProduct(v);
+    Vector4FD vp = camera->getPosition() - obj.transVertexList_[itp.at(0)];
+    if ( !(itp.getState() & kPolygonState2Side) && vp.dotProduct(itp.normal_) > 0.) {
+      itp.setState(kPolygonStateVisible);
+    }
+  }
+
+
+
+  auto mat = camera->getWorldToScreenMatrix4x4FD();
 
   auto transVerit = obj.transVertexList_.begin();
   while (transVerit != obj.transVertexList_.end()) {
@@ -303,21 +335,22 @@ void Window::onDraw(Renderer& renderer) {
     ++transVerit;
   }
 
-  for (auto& itp : obj.polygons_) {
-    itp.normal_.x_ += wx;
-    itp.normal_.y_ += wy;
-    itp.normal_.z_ += wz;
 
-    itp.normal_ = itp.normal_ * camera->buildWorldToCameraMatrix4x4FD();
-    //itp.normal_.normalizeSelf();
-  }
   //setCamera(obj, {cx, cy, cz}, -0, -0, -0);
 
+  //mat = camera->getCameraToProjectMatrix4x4FD();
+
+  //transVerit = obj.transVertexList_.begin();
+  //while (transVerit != obj.transVertexList_.end()) {
+  //  const auto pt = *transVerit;
+  //  *transVerit = pt * mat;
+  //  ++transVerit;
+  //}
+
   for (auto& itp : obj.polygons_) {
-    if (!camera->isBackFace(itp.normal_)) {
-      obj.transPolygons_.push_back(itp);
+    if (itp.getState() & kPolygonStateVisible) {
+        obj.transPolygons_.push_back(itp);
     }
-     
   }
   //perspectiveProject(obj, viewWidth, viewHeight);
   //perspectiveProject(obj, 90, viewWidth, viewHeight);
@@ -335,14 +368,14 @@ void Window::onDraw(Renderer& renderer) {
   }
 
 
-  int linestart = 8;
-  renderer.drawLine2D({(int)obj.transVertexList_[linestart].x_, (int)obj.transVertexList_[linestart].y_}, {(int)obj.transVertexList_[linestart + 1].x_, (int)obj.transVertexList_[linestart+1].y_}, Color(255, 0, 0));
-  
-  linestart = 10;
-  renderer.drawLine2D({(int)obj.transVertexList_[linestart].x_, (int)obj.transVertexList_[linestart].y_}, {(int)obj.transVertexList_[linestart + 1].x_, (int)obj.transVertexList_[linestart + 1].y_}, Color(255, 0, 0));
+  //int linestart = 8;
+  //renderer.drawLine2D({(int)obj.transVertexList_[linestart].x_, (int)obj.transVertexList_[linestart].y_}, {(int)obj.transVertexList_[linestart + 1].x_, (int)obj.transVertexList_[linestart+1].y_}, Color(255, 0, 0));
+  //
+  //linestart = 10;
+  //renderer.drawLine2D({(int)obj.transVertexList_[linestart].x_, (int)obj.transVertexList_[linestart].y_}, {(int)obj.transVertexList_[linestart + 1].x_, (int)obj.transVertexList_[linestart + 1].y_}, Color(255, 0, 0));
 
-  linestart = 12;
-  renderer.drawLine2D({(int)obj.transVertexList_[linestart].x_, (int)obj.transVertexList_[linestart].y_}, {(int)obj.transVertexList_[linestart + 1].x_, (int)obj.transVertexList_[linestart + 1].y_}, Color(0, 255, 0));
+  //linestart = 12;
+  //renderer.drawLine2D({(int)obj.transVertexList_[linestart].x_, (int)obj.transVertexList_[linestart].y_}, {(int)obj.transVertexList_[linestart + 1].x_, (int)obj.transVertexList_[linestart + 1].y_}, Color(0, 255, 0));
 
 
   

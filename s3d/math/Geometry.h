@@ -51,9 +51,6 @@ public:
   explicit CylindricalPoint(const Point3<T>& pt) {
     radius_ = ::sqrt(pt.x_*pt.x_ + pt.y_*pt.y_);
     angle_ = ::atan2(pt.y_ , pt.x_);
-    //if (angle_ < T(0)) {// convert to positive
-    //  angle_ += impl::kPI_MUL_2;
-    //}
     z_ = pt.z_;
   }
   
@@ -80,15 +77,7 @@ public:
     }
 
     anglexy_ = ::atan2(pt.y_, pt.x_);
-    //if (anglexy_ < T(0)) {// convert to positive
-    //  anglexy_ = impl::kPI_MUL_2 + anglexy_;
-    //}
-
     anglez_ = ::acos(pt.z / radius_);
-    //if (anglez_ < T(0)) {// convert to positive
-    //  anglez_ = impl::kPI_MUL_2 + anglez_;
-    //}
-    
     z_ = pt.z_;
   }
 

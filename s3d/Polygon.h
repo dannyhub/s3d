@@ -10,7 +10,7 @@ namespace s3d
 {
 
 enum PolygonState {
-  kPolygonStateInvalid,
+  kPolygonStateInVisible,
   kPolygonStateVisible,
   kPolygonStateClipped,
   kPolygonStateBackface,
@@ -24,7 +24,7 @@ public:
   typedef uint32_t* iterator;
   typedef const uint32_t* const_iterator;
 
-  Polygon(const std::initializer_list<value_type>& ilist) {
+  Polygon(const std::initializer_list<value_type>& ilist) : state_(kPolygonStateInVisible) {
     assert(ilist.size() == VertexNum);
 
     std::copy(ilist.begin(), ilist.end(), vertices);
@@ -71,17 +71,25 @@ public:
     return vertices[index];
   }
 
-  Vector4FD normal_;
+  PolygonState getState() const {
+    return state_;
+  }
 
+  void setState(PolygonState s) {
+    state_ = PolygonState((unsigned)state_ | s);
+  }
+
+  Vector4FD normal_;
+  
 private:
+  PolygonState state_;
+
   value_type vertices[VertexNum];
   Color color_;
 
   Vector4FD n_;
 
   int id;
- 
-  PolygonState state;
 };
 
 }// s3d
