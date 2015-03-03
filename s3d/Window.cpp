@@ -240,7 +240,7 @@ void Window::onDraw(Renderer& renderer) {
     std::string name; 
     VertexList<Point4<double>> vlist;
     std::vector<Polygon<3>> polys;
-    plgloader.parse("D:\\work\\t3dlib\\T3DIICHAP07\\cube2.plg", name, vlist, polys);
+    plgloader.parse("D:\\work\\t3dlib\\T3DIICHAP07\\tank2.plg", name, vlist, polys);
 
     for (auto pt : vlist) {
       obj.addVertex(pt);
@@ -311,7 +311,7 @@ void Window::onDraw(Renderer& renderer) {
   int viewWidth = winWidth;
   int viewHeight = winHeight;
 
-  auto camera = createUVNCamera({0, 0, -500}, {cx, cy, cz + 300}, 90, 1, 1000, viewWidth, winHeight);
+  auto camera = createUVNCamera({cx, cy, cz - 310}, {cx, cy, cz + 300}, 90, 1, 1000, viewWidth, winHeight);
 
   for (auto& itp : obj.polygons_) {
     const auto u = obj.transVertexList_[itp.at(1)] - obj.transVertexList_[itp.at(0)];
@@ -395,6 +395,12 @@ void Window::onDraw(Renderer& renderer) {
 
   //  renderer.drawTriangle2D(p0, p1, p2, Color(255, 0, 255));
   //}
+
+  //renderer.drawLine2D({0,250}, {1500,250}, Color(255, 0, 0));
+
+  //renderer.drawLine2D({250, 0}, {250, 1700}, Color(255, 0, 0));
+
+  //renderer.drawLine2D({10, 10}, {1700, 1700}, Color(255, 0, 0));
 
   //{
   //  Point2<int> p0(rand() % randW, rand() % randH);

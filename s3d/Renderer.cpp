@@ -128,31 +128,10 @@ void Renderer::drawPixel2D(const Point2<int>& p0, const Color& c) {
 
 void Renderer::drawLine2D(const Point2<int>& p0, const Point2<int>& p1, const Color& c) {
   Point2<int> cp0 = p0;
-  //if (cp0.x_ < 0) 
-  //  cp0.x_ = 0;
-
-  //if (cp0.y_ < 0)
-  //  cp0.y_ = 0;
-
-  //if (cp0.x_ >= buffer_.getWidth())
-  //  cp0.x_ = buffer_.getWidth()-1;
-
-  //if (cp0.y_ >= buffer_.getHeight())
-  //  cp0.y_ = buffer_.getHeight() - 1;
-
   Point2<int> cp1 = p1;
-  //if (cp1.x_ < 0)
-  //  cp1.x_ = 0;
-
-  //if (cp1.y_ < 0)
-  //  cp1.y_ = 0;
-
-  //if (cp1.x_ >= buffer_.getWidth())
-  //  cp1.x_ = buffer_.getWidth() - 1;
-
-  //if (cp1.y_ >= buffer_.getHeight())
-  //  cp1.y_ = buffer_.getHeight() - 1;
-
+  if (!clipLine(cp0, cp1, RectI(100, 100, 500, 500)))
+    return;
+  
   if (cp1.x_ == cp0.x_) {
     drawLine2D_Vertical(cp0, cp1, c);
     return;
@@ -170,6 +149,170 @@ void Renderer::drawTriangle2D(const Point2<int>& p0, const Point2<int>& p1, cons
   drawLine2D(p0, p1, c);
   drawLine2D(p1, p2, c);
   drawLine2D(p2, p0, c);
+}
+
+namespace
+{
+Point2<int> intersectPoint(const unsigned pCode, const Point2<int>& p, const int dx, const int dy, int clipMinX, int clipMinY, int clipMaxX, int clipMaxY) {
+  static const int clipCodeC = 0x0; //center
+
+  static const int clipCodeW = 0x1; //west
+  static const int clipCodeE = 0x2; //east
+  static const int clipCodeS = 0x4; //south
+  static const int clipCodeN = 0x8; //north
+
+  static const int clipCodeNW = 0x9; //nw
+  static const int clipCodeSW = 0x5; //sw
+  static const int clipCodeNE = 0xA; //ne
+  static const int clipCodeSE = 0x6; //se
+   
+  int x = p.x_, y = p.y_;
+  //line (y1-y0) = mx(x1-x0)
+
+  //for hor
+  //x' = p0.x_ + (clipRect.getY() - p0.y_) * (dx / dy);
+  //y' = clipRect.getY();
+
+  //for ver
+  //x' = clipRect.getX();
+  //y' = p0.y_ + (clipRect.getX() - p0.x_) * (dy / dx);
+
+  switch (pCode) {
+    case clipCodeC:
+    break;
+    case clipCodeW:
+    {
+      x = clipMinX;
+      y = static_cast<int>(p.y_ + (clipMinX - p.x_) * (dy / dx) + 0.5);
+    }
+    break;
+    case clipCodeE:
+    {
+      x = clipMaxX;
+      y = static_cast<int>(p.y_ + (clipMaxX - p.x_) * (dy / dx) + 0.5);
+    }
+    break;
+    case clipCodeN:
+    {
+      x = static_cast<int>(p.x_ + (clipMinY - p.y_)  * (dx / dy) + 0.5);
+      y = clipMinY;
+    }
+    break;
+    case clipCodeS:
+    {
+      x = static_cast<int>(p.x_ + (clipMaxY - p.y_) * (dx / dy)+ 0.5);;
+      y = clipMaxY;
+    }
+    break;
+    case clipCodeNW:
+    {
+      x = static_cast<int>(p.x_ + (clipMinY - p.y_)  * (dx / dy) + 0.5);
+      y = clipMinY;
+      if (x < clipMinX || x > clipMaxX) {
+        x = clipMinX;
+        y = static_cast<int>(p.y_ + (clipMinX - p.x_) * (dy / dx) + 0.5);
+      }
+    }
+    break;
+    case clipCodeSW:
+    {
+      x = static_cast<int>(p.x_ + (clipMaxY - p.y_) * (dx / dy) + 0.5);;
+      y = clipMaxY;
+      if (x < clipMinX || x > clipMaxX) {
+        x = clipMinX;
+        y = static_cast<int>(p.y_ + (clipMinX - p.x_) * (dy / dx) +0.5);
+      }     
+    }
+    break;
+    case clipCodeNE:
+    {
+      x = static_cast<int>(p.x_ + (clipMinY - p.y_)  * (dx / dy) + 0.5);
+      y = clipMinY;
+      if (x < clipMinX || x > clipMaxX) {
+        x = clipMaxX;
+        y = static_cast<int>(p.y_ + (clipMaxX - p.x_) * (dy / dx) +0.5);
+      } 
+    }
+    break;
+    case clipCodeSE:
+    {
+      x = static_cast<int>(p.x_ + (clipMaxY - p.y_) * (dx / dy)+ 0.5);;
+      y = clipMaxY;
+      if (x < clipMinX || x > clipMaxX) {
+        x = clipMaxX;
+        y = static_cast<int>(p.y_ + (clipMaxX - p.x_) * (dy / dx) +0.5);
+      } 
+    }
+    break;
+  } 
+
+  return Point2<int>(x, y);
+}
+
+}
+bool Renderer::clipLine(Point2<int>& p0, Point2<int>& p1, const RectI& clipRect) {
+  static const int clipCodeC = 0x0; //center
+
+  static const int clipCodeW = 0x1; //west
+  static const int clipCodeE = 0x2; //east
+  static const int clipCodeS = 0x4; //south
+  static const int clipCodeN = 0x8; //north
+
+  static const int clipCodeNW = 0x9; //nw
+  static const int clipCodeSW = 0x5; //sw
+  static const int clipCodeNE = 0xA; //ne
+  static const int clipCodeSE = 0x6; //se
+
+  unsigned int p0Code = 0;
+  unsigned int p1Code = 0;
+
+  if (p0.x_ < clipRect.getLeft())
+    p0Code |= clipCodeW;
+  else if (p0.x_ > clipRect.getRight())
+    p0Code |= clipCodeE;
+
+  if (p0.y_ < clipRect.getTop())
+    p0Code |= clipCodeN;
+  else if (p0.y_ > clipRect.getBottom())
+    p0Code |= clipCodeS;
+
+  if (p1.x_ < clipRect.getLeft())
+    p1Code |= clipCodeW;
+  else if (p1.x_ > clipRect.getRight())
+    p1Code |= clipCodeE;
+
+  if (p1.y_ < clipRect.getTop())
+    p1Code |= clipCodeN;
+  else if (p1.y_ > clipRect.getBottom())
+    p1Code |= clipCodeS;
+
+  if (p0Code == 0 && p1Code == 0) {
+    return true;
+  }
+
+  if (p0Code & p1Code) {
+    return false;
+  }
+
+  //line (y1-y0) = mx(x1-x0)
+  auto dx = p1.x_ - p0.x_;
+  auto dy = p1.y_ - p0.y_;
+  auto ipt0 = intersectPoint(p0Code, p0, dx, dy, clipRect.getX(), clipRect.getY(), clipRect.getRight(), clipRect.getBottom());
+  auto ipt1 = intersectPoint(p1Code, p1, dx, dy, clipRect.getX(), clipRect.getY(), clipRect.getRight(), clipRect.getBottom());
+
+  if (ipt0.x_ < clipRect.getX() || ipt0.x_ > clipRect.getRight() ||
+      ipt1.x_ < clipRect.getX() || ipt1.x_ > clipRect.getRight() ||
+      ipt0.y_ < clipRect.getY() || ipt0.y_ > clipRect.getBottom() ||
+      ipt1.y_ < clipRect.getY() || ipt1.y_ > clipRect.getBottom()
+      ) {
+
+      return false;
+  }
+
+  p0 = ipt0;
+  p1 = ipt1;
+
+  return true;
 }
 
 }// namespace s3d

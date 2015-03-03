@@ -137,6 +137,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="PLGLoader.h" />
     <ClInclude Include="Polygon.h" />
+    <ClInclude Include="Rect.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="s3d.h" />
@@ -156,6 +157,7 @@
     <ClCompile Include="math\tests\vector_unittest.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="PLGLoader.cpp" />
+    <ClCompile Include="Rect.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="s3d.cpp" />
     <ClCompile Include="stdafx.cpp">

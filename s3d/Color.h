@@ -18,8 +18,8 @@ public:
 
   uint32_t getABGRValue() const {
     return argb_;
+    
   }
-
 
 private:
   uint32_t argb_;
