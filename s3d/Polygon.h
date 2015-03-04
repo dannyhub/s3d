@@ -13,8 +13,16 @@ enum PolygonState {
   kPolygonStateInVisible,
   kPolygonStateVisible,
   kPolygonStateClipped,
-  kPolygonStateBackface,
-  kPolygonState2Side
+  kPolygonStateBackface
+};
+
+enum PolygonAttr {
+  kPolygonAttr2Start = 0,
+  kPolygonAttr2Side,
+  kPolygonAttrShadeModePureFlag,
+  kPolygonAttrShadeModeFlatFlag,
+  kPolygonAttrShadeModeGOURAUDFlag,
+  kPolygonAttrShadeModePHONGFlag
 };
 
 template<size_t VertexNum>
@@ -24,10 +32,29 @@ public:
   typedef uint32_t* iterator;
   typedef const uint32_t* const_iterator;
 
-  Polygon(const std::initializer_list<value_type>& ilist) : state_(kPolygonStateInVisible) {
+  Polygon() : state_(kPolygonStateInVisible) {
+  }
+
+  Polygon(const std::initializer_list<value_type>& ilist) : state_(kPolygonStateInVisible), attr_(kPolygonAttr2Start){
     assert(ilist.size() == VertexNum);
 
     std::copy(ilist.begin(), ilist.end(), vertices);
+  }
+
+  Polygon(const Polygon& p) {
+    color_ = p.color_;
+    state_ = p.state_;
+    attr_ = p.attr_;
+    normal_ = p.normal_;
+    std::copy(p.vertices, p.vertices + VertexNum, vertices);
+  }
+
+  Polygon& operator= (const Polygon& p) {
+    color_ = p.color_;
+    state_ = p.state_;
+    attr_ = p.attr_;
+    normal_ = p.normal_;
+    std::copy(p.vertices, p.vertices + VertexNum, vertices);
   }
 
   Color getColor() const {
@@ -79,15 +106,22 @@ public:
     state_ = PolygonState((unsigned)state_ | s);
   }
 
+  PolygonAttr getAttr() const {
+    return attr_;
+  }
+
+  void setAttr(PolygonAttr s) {
+    attr_ = PolygonAttr((unsigned)attr_ | s);
+  }
+
   Vector4FD normal_;
   
 private:
   PolygonState state_;
+  PolygonAttr attr_;
 
   value_type vertices[VertexNum];
   Color color_;
-
-  Vector4FD n_;
 
   int id;
 };

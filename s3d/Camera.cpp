@@ -72,7 +72,7 @@ bool CameraUVN::isBackFacePlane(const Vector4FD& n) {
   return vp.dotProduct(n) < 0.;
 }
 
-bool CameraUVN::isSphereOutOfView(const Point3FD& position, double radius) {
+bool CameraUVN::isSphereOutOfView(const Point4FD& position, double radius) {
   if (position.z_ - radius > farClipZ_)
     return true;
 

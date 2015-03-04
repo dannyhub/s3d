@@ -5,9 +5,14 @@
 namespace s3d
 {
 
-#define Point2 Vector2
-#define Point3 Vector3
-#define Point4 Vector4
+template<typename T>
+using Point2 = Vector2<T>;
+
+template<typename T>
+using Point3 = Vector3<T>;
+
+template<typename T>
+using Point4 = Vector4<T>;
 
 typedef Vector2I Point2I;
 typedef Vector3I Point3I;
@@ -19,6 +24,7 @@ typedef Vector4F Point4F;
 typedef Vector2FD Point2FD;
 typedef Vector3FD Point3FD;
 typedef Vector4FD Point4FD;
+
 }// s3d
 
 

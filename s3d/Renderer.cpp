@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Renderer.h"
 
+using namespace std;
 
 namespace s3d
 {
@@ -129,7 +130,7 @@ void Renderer::drawPixel2D(const Point2<int>& p0, const Color& c) {
 void Renderer::drawLine2D(const Point2<int>& p0, const Point2<int>& p1, const Color& c) {
   Point2<int> cp0 = p0;
   Point2<int> cp1 = p1;
-  if (!clipLine(cp0, cp1, RectI(100, 100, 500, 500)))
+  if (!clipLine(cp0, cp1, RectI(0, 0, buffer_.getWidth() -1, buffer_.getHeight() -1)))
     return;
   
   if (cp1.x_ == cp0.x_) {
@@ -149,6 +150,95 @@ void Renderer::drawTriangle2D(const Point2<int>& p0, const Point2<int>& p1, cons
   drawLine2D(p0, p1, c);
   drawLine2D(p1, p2, c);
   drawLine2D(p2, p0, c);
+}
+
+void Renderer::fillFlatTopTriangle2D(const Point2<int>& p0, const Point2<int>& p1, const Point2<int>& p2, const Color& c) {
+  auto dp0 = p0, dp1 = p1, dp2 = p2;
+
+  if (dp0.y_ != dp1.y_) {
+    if (dp0.y_ == dp2.y_)
+      swap(dp1, dp2);
+    else
+      swap(dp0, dp2);
+  } else {
+    if (dp0.y_ == dp2.y_)
+      return;
+  }
+
+  assert(dp0.y_ == dp1.y_);
+
+  const double m0 = double(dp2.x_ - dp0.x_) / double(dp2.y_ - dp0.y_);
+  const double m1 = double(dp2.x_ - dp1.x_) / double(dp2.y_ - dp1.y_);
+  const auto steps = dp2.y_ - dp0.y_;
+  int y = dp0.y_ + 1;
+  double x0 = dp0.x_ + m0;
+  double x1 = dp1.x_ + m1;
+
+  drawLine2D(p0, p1, c);
+  for (int i = 0; i < steps; ++i) {
+    drawLine2D({static_cast<int>(x0 + 0.5), y}, {static_cast<int>(x1 + 0.5), y}, c);
+    ++y;
+    x0 += m0;
+    x1 += m1;
+  }
+
+}
+
+void Renderer::fillFlatBottomTriangle2D(const Point2<int>& p0, const Point2<int>& p1, const Point2<int>& p2, const Color& c) {
+  auto dp0 = p0, dp1 = p1, dp2 = p2;
+
+  if (dp0.y_ != dp1.y_) {
+    if (dp0.y_ == dp2.y_)
+      swap(dp1, dp2);
+    else
+      swap(dp0, dp2);
+  } else {
+    if (dp0.y_ == dp2.y_)
+      return;
+  }
+
+  assert(dp0.y_ == dp1.y_);
+
+  const double m0 = -double(dp2.x_ - dp0.x_) / double(dp2.y_ - dp0.y_);
+  const double m1 = -double(dp2.x_ - dp1.x_) / double(dp2.y_ - dp1.y_);
+  const auto steps = dp0.y_ - dp2.y_;
+  int y = dp0.y_ - 1;
+  double x0 = dp0.x_ + m0;
+  double x1 = dp1.x_ + m1;
+
+  drawLine2D(p0, p1, c);
+  for (int i = 0; i < steps; ++i) {
+    drawLine2D({static_cast<int>(x0 + 0.5), y}, {static_cast<int>(x1 + 0.5), y}, c);
+    --y;
+    x0 += m0;
+    x1 += m1;
+  }
+}
+
+void Renderer::fillTriangle2D(const Point2<int>& p0, const Point2<int>& p1, const Point2<int>& p2, const Color& c) {
+  auto dp0 = p0, dp1 = p1, dp2 = p2;
+  if (dp0.y_ > dp1.y_)
+    swap(dp0, dp1);
+
+  if (dp1.y_ > dp2.y_)
+    swap(dp1, dp2);
+
+  if (dp0.y_ > dp1.y_)
+    swap(dp0, dp1);
+
+  assert(dp0.y_ <= dp1.y_ &&  dp1.y_ <= dp2.y_);
+
+  if (dp0.y_ == dp1.y_) {
+    return fillFlatTopTriangle2D(dp0, dp1, dp2, c);
+  } else if (dp1.y_ == dp2.y_) {
+    return fillFlatBottomTriangle2D(dp1, dp2, dp0, c);
+  } else {
+    const double m = double(dp2.x_ - dp0.x_) / double(dp2.y_ - dp0.y_);
+    const int ix = static_cast<int>(dp0.x_ + (dp1.y_ - dp0.y_)*m + 0.5);
+
+    fillFlatBottomTriangle2D(dp0, dp1, {ix, dp1.y_}, c);
+    fillFlatTopTriangle2D(dp1, {ix, dp1.y_}, dp2, c);
+  }
 }
 
 namespace

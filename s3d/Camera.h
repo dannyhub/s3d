@@ -39,7 +39,7 @@ public:
     return matWorldToScreen_;
   }
 
-  bool isSphereOutOfView(const Point3FD& position, double radius);
+  bool isSphereOutOfView(const Point4FD& position, double radius);
   bool isBackFacePlane(const Vector4FD& n);
 
   Point4FD getPosition() const {

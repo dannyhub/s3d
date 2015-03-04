@@ -47,6 +47,11 @@ public:
 
   void drawTriangle2D(const Point2<int>& p0, const Point2<int>& p1, const Point2<int>& p2, const Color& c);
 
+  void fillFlatTopTriangle2D(const Point2<int>& p0, const Point2<int>& p1, const Point2<int>& p2, const Color& c);
+  void fillFlatBottomTriangle2D(const Point2<int>& p0, const Point2<int>& p1, const Point2<int>& p2, const Color& c);
+
+  void fillTriangle2D(const Point2<int>& p0, const Point2<int>& p1, const Point2<int>& p2, const Color& c);
+
   bool clipLine(Point2<int>& p0, Point2<int>& p1, const RectI& clipRect);
 
 #ifdef WIN32_GDI_RENDERDER

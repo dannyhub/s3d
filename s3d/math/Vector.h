@@ -39,6 +39,10 @@ public:
     y_ = *bit;
   }
 
+  typedef Vector2 Point2;
+  Vector2(const Point2& p0, const Point2& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_) {
+  }
+
   T length() const;
   Vector2 normalize() const;
   void normalizeSelf() {
@@ -79,6 +83,10 @@ public:
     x_ = *bit++;
     y_ = *bit++;
     z_ = *bit;
+  }
+
+  template<typename POINT>
+  Vector3(const POINT& p0, const POINT& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_), z_(p1.z_ - p0.z_) {
   }
 
   T length() const;
@@ -130,6 +138,10 @@ public:
     y_ = *bit++;
     z_ = *bit;
     w_ = T(1);
+  }
+
+  template<typename POINT>
+  Vector4(const POINT& p0, const POINT& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_), z_(p1.z_ - p0.z_), w_(T(1)) {
   }
 
   T length() const;

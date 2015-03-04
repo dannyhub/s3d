@@ -62,7 +62,7 @@ static double anglez = 0 * 3.1415927 / 180;
 
 double wx = 0;
 double wy = 0;
-double wz = 100;
+double wz = 500;
 
 double cx = 0;
 double cy = 0;
@@ -240,7 +240,7 @@ void Window::onDraw(Renderer& renderer) {
     std::string name; 
     VertexList<Point4<double>> vlist;
     std::vector<Polygon<3>> polys;
-    plgloader.parse("D:\\work\\t3dlib\\T3DIICHAP07\\tank2.plg", name, vlist, polys);
+    plgloader.parse("D:\\work\\t3dlib\\T3DIICHAP07\\cube1.plg", name, vlist, polys, 10);
 
     for (auto pt : vlist) {
       obj.addVertex(pt);
@@ -251,19 +251,8 @@ void Window::onDraw(Renderer& renderer) {
     }
 
   } catch (...) {
+    return;
   }
-  //obj.addVertex({5, 5, 5}); // p0
-  //obj.addVertex({-5, 5, 5}); // p1
-  //obj.addVertex({-5, 5, -5});// p2
-  //obj.addVertex({5, 5, -5}); // p3
-  //obj.addVertex({5, -5, 5}); // p4
-  //obj.addVertex({-5, -5, 5}); // p5
-  //obj.addVertex({-5, -5, -5}); // p6
-  //obj.addVertex({5, -5, -5});// p7
-
-  //obj.addVertex({0, 40, 30});
-  //obj.addVertex({40, -40, 30});
-  //obj.addVertex({-40, -40, 30});
 
   obj.addVertex({-10, 0, 0});
   obj.addVertex({10, 0, 0});
@@ -274,61 +263,46 @@ void Window::onDraw(Renderer& renderer) {
   obj.addVertex({0, 0, 10});
   obj.addVertex({0, 0, -10});
 
-  unsigned int temp_poly_indices[12 * 3] = {
-    0, 1, 2, 0, 2, 3, // polygons 0 and 1
-    0, 7, 4, 0, 3, 7, // polygons 2 and 3
-    4, 7, 6, 4, 6, 5, // polygons 4 and 5
-    1, 6, 2, 1, 5, 6, // polygons 6 and 7
-    3, 6, 7, 3, 2, 6, // polygons 8 and 9
-    0, 4, 5, 0, 1, 5}; // polygons 10 and 11
-
-  //for (int i = 0; i < 1/*12 * 3*/; i += 3) {
-  //  int id = temp_poly_indices[i];
-  //  Point2<int> p0 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
-
-  //  id = temp_poly_indices[i + 1];
-  //  Point2<int> p1 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
-
-  //  id = temp_poly_indices[i + 2];
-  //  Point2<int> p2 = {(int)obj.localVertexList_[id].x_, (int)obj.localVertexList_[id].y_};
-  //  
-  //  obj.addPolygon({temp_poly_indices[i], temp_poly_indices[i+1], temp_poly_indices[i+2]});
-  //}
-
   auto rotateMat = buildRotateMatrix4x4(-anglex, -angley, -anglez);
   for (auto& v : obj.localVertexList_) {
     v = (v * rotateMat);
   }
 
-  //for (auto& itp : obj.polygons_) {
-  //  itp.normal_ = itp.normal_ * rotateMat;
-  //  //itp.normal_.normalizeSelf();
-  //}
- 
   addToWorld(obj, wx, wy, wz);
-
 
   int viewWidth = winWidth;
   int viewHeight = winHeight;
 
-  auto camera = createUVNCamera({cx, cy, cz - 310}, {cx, cy, cz + 300}, 90, 1, 1000, viewWidth, winHeight);
+  auto camera = createUVNCamera({cx, cy, cz }, {cx, cy, cz + 1}, 140, 50, 1000, viewWidth, winHeight);
+  auto matWorldToCameraMatrix4x4FD = camera->getWorldToCameraMatrix4x4FD();
+
+  Point4FD sphererPt = {wx, wy, wz};
+  sphererPt = sphererPt * matWorldToCameraMatrix4x4FD;
+  if (camera->isSphereOutOfView(sphererPt, 100))
+    return;
+
+  auto transVerit = obj.transVertexList_.begin();
+  while (transVerit != obj.transVertexList_.end()) {
+    const auto pt = *transVerit;
+    *transVerit = pt * matWorldToCameraMatrix4x4FD;
+    ++transVerit;
+  }
 
   for (auto& itp : obj.polygons_) {
     const auto u = obj.transVertexList_[itp.at(1)] - obj.transVertexList_[itp.at(0)];
     const auto v = obj.transVertexList_[itp.at(2)] - obj.transVertexList_[itp.at(0)];
 
     itp.normal_ = u.crossProduct(v);
-    Vector4FD vp = camera->getPosition() - obj.transVertexList_[itp.at(0)];
-    if ( !(itp.getState() & kPolygonState2Side) && vp.dotProduct(itp.normal_) > 0.) {
+    Vector4FD vp(obj.transVertexList_[itp.at(0)], camera->getPosition());
+    if (vp.dotProduct(itp.normal_) > 0.) {
       itp.setState(kPolygonStateVisible);
     }
   }
 
 
+  auto mat = camera->getCameraToProjectMatrix4x4FD() * camera->getPerspectiveToScreenMatrix4x4FD();
 
-  auto mat = camera->getWorldToScreenMatrix4x4FD();
-
-  auto transVerit = obj.transVertexList_.begin();
+  transVerit = obj.transVertexList_.begin();
   while (transVerit != obj.transVertexList_.end()) {
     const auto pt = *transVerit;
     *transVerit = pt * mat;
@@ -354,7 +328,12 @@ void Window::onDraw(Renderer& renderer) {
   }
   //perspectiveProject(obj, viewWidth, viewHeight);
   //perspectiveProject(obj, 90, viewWidth, viewHeight);
+  //const int xx = 100;
+  //int bb[xx] = {0};
+  //int *p = (int*)&xx;
+  //*p = 1111;
 
+  //const int &i = 3.14;
   for (auto itp : obj.transPolygons_) {
     int id = itp[0];
     Point2<int> p0 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
@@ -364,7 +343,7 @@ void Window::onDraw(Renderer& renderer) {
 
     id = itp[2];
     Point2<int> p2 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
-    renderer.drawTriangle2D(p0, p1, p2, Color(0xc0, 0xf0, 0));
+    renderer.drawTriangle2D(p0, p1, p2, itp.getColor());
   }
 
 
@@ -395,6 +374,12 @@ void Window::onDraw(Renderer& renderer) {
 
   //  renderer.drawTriangle2D(p0, p1, p2, Color(255, 0, 255));
   //}
+
+  //renderer.fillTriangle2D({100, 100}, {200, 200}, {50, 500}, Color(0, 0, 255));
+
+
+  //renderer.fillFlatBottomTriangle2D({100, 320}, {200, 320}, {50, 100}, Color(0, 0, 255));
+  //renderer.fillFlatTopTriangle2D({50, 320}, {100, 100}, {200, 100}, Color(0, 0, 255));
 
   //renderer.drawLine2D({0,250}, {1500,250}, Color(255, 0, 0));
 

@@ -81,7 +81,7 @@ inline Point4<T> operator * (Point4<T> pt4, const Matrix<T, 4U, 4U>& m1) {
   ptRes.y_ = m1[0][1] * pt4.x_ + m1[1][1] * pt4.y_ + m1[2][1] * pt4.z_ + m1[3][1] * pt4.w_;
   ptRes.z_ = m1[0][2] * pt4.x_ + m1[1][2] * pt4.y_ + m1[2][2] * pt4.z_ + m1[3][2] * pt4.w_;
   ptRes.w_ = m1[0][3] * pt4.x_ + m1[1][3] * pt4.y_ + m1[2][3] * pt4.z_ + m1[3][3] * pt4.w_;
-//  assert(ptRes.w_ != 0.f);
+  assert(ptRes.w_ != 0.f);
 
   if (ptRes.w_ != 1.f) {
     ptRes.x_ /= ptRes.w_;
