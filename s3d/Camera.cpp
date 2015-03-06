@@ -4,11 +4,56 @@
 namespace s3d
 {
 
-CameraUVN::CameraUVN() {
+CameraUVN::CameraUVN(const Point4FD& pos, const Point4FD& targetPos, double fovDegree,
+                          double nearZ, double farZ, double screenWidth, double screenHeight) {
+  fov_ = fovDegree;
+  position_ = pos;
+  target_ = targetPos;
+  screenWidth_ = screenWidth;
+  screenHeight_ = screenHeight;
+  nearClipZ_ = nearZ;
+  farClipZ_ = farZ;
+  aspectRatio_ = screenWidth / screenHeight;
+
+  viewPlaneHeight_ = viewPlaneWidth_ = 2.0;
+  viewDistance_ = 0.5 * viewPlaneWidth_ / ::tan(degreeToRadius(fovDegree * 0.5));
+  assert(viewDistance_ != 0.);
+
+  buildUVNVector();
+  //rightClipPlane_.point_ = {0,0,0};
+
+  //const double slopRight = -0.5 * viewPlaneWidth_  / viewDistance_;
+  const auto halfWidth = 0.5 * viewPlaneWidth_;
+
+  rightClipPlane_.n_ = {viewDistance_, 0, -halfWidth};
+  leftClipPlane_.n_ = {-viewDistance_, 0, -halfWidth};
+
+  //const double slopTop = -0.5 * viewPlaneHeight_ / viewDistance_;
+  const auto halfHeight = 0.5 * viewPlaneHeight_;
+
+  topClipPlane_.n_ = {0, viewDistance_, -halfHeight};
+  bottomClipPlane_.n_ = {0, -viewDistance_, -halfHeight};
+
+  matWorldToCamera_ = buildWorldToCameraMatrix4x4FD();
+  matCameraToPerspective_ = buildCameraToPerspectiveMatrix4x4FD();
+  matCameraToScreen_ = buildCameraToScreenMatrix4x4FD();
+  matPerspectiveToSreen_ = buildPerspectiveToScreenMatrix4x4FD();
+  matWorldToScreen_ = buildWorldToSreenMatrix4x4FD();
 }
 
-
 CameraUVN::~CameraUVN() {
+}
+
+void CameraUVN::buildUVNVector() {
+  n_ = target_ - position_;
+
+  v_ = {0, 1, 0};
+  u_ = v_.crossProduct(n_);
+  v_ = n_.crossProduct(u_);
+
+  n_.normalizeSelf();
+  u_.normalizeSelf();
+  v_.normalizeSelf();
 }
 
 Matrix4x4FD CameraUVN::buildWorldToCameraMatrix4x4FD() {
@@ -20,7 +65,7 @@ Matrix4x4FD CameraUVN::buildWorldToCameraMatrix4x4FD() {
   Matrix4x4FD tmat = {1, 0, 0, 0,
                       0, 1, 0, 0,
                       0, 0, 1, 0,
-                      -position_.x_, -position_.y_, position_.z_, 1};
+                      -position_.x_, -position_.y_, -position_.z_, 1};
 
   return rmat * tmat;
 }
@@ -32,24 +77,32 @@ Matrix4x4FD CameraUVN::buildCameraToPerspectiveMatrix4x4FD() {
    *  py = aspectRatio_ * y * viewDistance_ / z, [-1,1]
    *
    */
-
-  Matrix4x4FD mat = {viewDistance_, 0, 0, 0,
-                      0, viewDistance_* aspectRatio_, 0, 0,
-                      0, 0, 1, 1,
-                      0, 0, 0, 0};
+  const auto vd = viewDistance_;
+  const auto ar = aspectRatio_;
+  Matrix4x4FD mat = {vd, 0,       0, 0,
+                      0, vd * ar, 0, 0,
+                      0, 0,       1, 1,
+                      0, 0,       0, 0};
   return mat;
+}
+
+Matrix4x4FD CameraUVN::buildCameraToScreenMatrix4x4FD() {
+  return buildCameraToPerspectiveMatrix4x4FD() * buildPerspectiveToScreenMatrix4x4FD();
 }
 
 Matrix4x4FD CameraUVN::buildPerspectiveToScreenMatrix4x4FD() {
   /*
-  vx = (px + 1)  * (screenWidth_-1) / 2 
-     = (px + 1)  * ((screenWidth_/2) - 1/2)
-     = px * ((screenWidth_/2) - 1/2) + ((screenWidth_/2) - 1/2)
+  let sw = screenWidth_
+  let sh = screenHeight_
 
-  vy = (screenHeight_ - 1) - (py + 1)  * (screenHeight_-1) / 2 = (screenHeight_ - 1) - (py + 1)  * ((screenHeight_/2) - 1/2)
-     = -(py + 1)  * ((screenHeight_/2) - 1/2) + (screenHeight_ - 1)
-     = -py * ((viewHeight/2) - 1/2) - ((screenHeight_/2) - 1/2) + (screenHeight_ - 1)
-     = -py * ((screenHeight_/2) - 1/2) + ((screenHeight_/2) - 1/2)
+  vx = (px + 1)  * (sw-1) / 2 
+     = (px + 1)  * ((sw/2) - 1/2)
+     = px * ((sw/2) - 1/2) + ((sw/2) - 1/2)
+
+  vy = (sh - 1) - (py + 1)  * (sh-1) / 2 = (sh - 1) - (py + 1)  * ((sh/2) - 1/2)
+     = -(py + 1)  * ((sh/2) - 1/2) + (sh - 1)
+     = -py * ((sh/2) - 1/2) - ((sh/2) - 1/2) + (sh - 1)
+     = -py * ((sh/2) - 1/2) + ((sh/2) - 1/2)
   */
 
   const auto xalpha = screenWidth_ * 0.5 - 0.5;
@@ -108,50 +161,6 @@ bool CameraUVN::isSphereOutOfView(const Point4FD& position, double radius) {
   }
 
   return false;
-}
-
-CameraPtr createUVNCamera(const Point4FD& pos, const Point4FD& targetPos, double fovDegree,
-                          double nearZ, double farZ, double screenWidth, double screenHeight) {
-  CameraPtr cm(new CameraUVN);
-  cm->fov_ = fovDegree;
-  cm->position_ = pos;
-  cm->target_ = targetPos;
-  cm->screenWidth_ = screenWidth;
-  cm->screenHeight_ = screenHeight;
-  cm->nearClipZ_ = nearZ;
-  cm->farClipZ_ = farZ;
-  cm->aspectRatio_ = screenWidth / screenHeight;
-
-  cm->viewPlaneHeight_ = cm->viewPlaneWidth_ = 2.0;
-  cm->viewDistance_ = 0.5 * cm->viewPlaneWidth_ / ::tan(degreeToRadius(fovDegree * 0.5));
-  cm->n_ = targetPos - pos;
-  
-  cm->v_ = {0, 1, 0};
-  cm->u_ = cm->v_.crossProduct(cm->n_);
-  cm->v_ = cm->n_.crossProduct(cm->u_);
-
-  cm->n_.normalizeSelf();
-  cm->u_.normalizeSelf();
-  cm->v_.normalizeSelf();
-  //cm->rightClipPlane_.point_ = {0,0,0};
-
-  //const double slopRight = -0.5 * cm->viewPlaneWidth_  / cm->viewDistance_;
-  const auto halfWidth = 0.5 * cm->viewPlaneWidth_;
-
-  cm->rightClipPlane_.n_ = {cm->viewDistance_, 0, -halfWidth};
-  cm->leftClipPlane_.n_ = {-cm->viewDistance_, 0, -halfWidth};
-
-  //const double slopTop = -0.5 * cm->viewPlaneHeight_ / cm->viewDistance_;
-  const auto halfHeight = 0.5 * cm->viewPlaneHeight_;
-
-  cm->topClipPlane_.n_ = {0, cm->viewDistance_, -halfHeight};
-  cm->bottomClipPlane_.n_ = {0, -cm->viewDistance_, -halfHeight};
-
-  cm->matWorldToCamera_ = cm->buildWorldToCameraMatrix4x4FD();
-  cm->matCameraToPerspective_ = cm->buildCameraToPerspectiveMatrix4x4FD();
-  cm->matPerspectiveToSreen_ = cm->buildPerspectiveToScreenMatrix4x4FD();
-  cm->matWorldToScreen_ = cm->buildWorldToSreenMatrix4x4FD();
-  return cm;
 }
 
 

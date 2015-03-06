@@ -1,7 +1,6 @@
 #pragma once
-#include "math/Point.h"
-#include "math/Vector.h"
-#include "math/Matrix.h"
+#include "math/Math.h"
+
 #include "VertexList.h"
 #include "Polygon.h"
 #include "Object.h"

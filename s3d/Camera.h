@@ -11,15 +11,15 @@
 #include <vector>
 #include <memory>
 
-#include <boost/noncopyable.hpp>
-
 namespace s3d
 {
 
-
-class CameraUVN : private boost::noncopyable {
+class CameraUVN {
 public:
   typedef Plane3D<double> Plane3DType;
+
+  CameraUVN(const Point4FD& pos, const Point4FD& targetPos, double fovDegree,
+            double nearZ, double farZ, double screenWidth, double screenHeight);
 
   virtual ~CameraUVN();
 
@@ -31,6 +31,10 @@ public:
     return matCameraToPerspective_;
   }
 
+  Matrix4x4FD getCameraToScreenMatrix4x4FD() {
+    return matCameraToScreen_;
+  }
+  
   Matrix4x4FD getPerspectiveToScreenMatrix4x4FD() {
     return matPerspectiveToSreen_;
   }
@@ -46,13 +50,26 @@ public:
     return position_;
   }
 
-protected:
-  CameraUVN();
+  Vector4FD getU() const {
+    return u_;
+  }
 
+  Vector4FD getV() const {
+    return v_;
+  }
+
+  Vector4FD getN() const {
+    return n_;
+  }
+
+protected:
   Matrix4x4FD buildWorldToCameraMatrix4x4FD();
   Matrix4x4FD buildCameraToPerspectiveMatrix4x4FD();
+  Matrix4x4FD buildCameraToScreenMatrix4x4FD();
   Matrix4x4FD buildPerspectiveToScreenMatrix4x4FD();
   Matrix4x4FD buildWorldToSreenMatrix4x4FD();
+
+  void buildUVNVector();
 
 protected:
   double fov_;              //field of view
@@ -80,20 +97,14 @@ protected:
 
   Matrix4x4FD matWorldToCamera_;
   Matrix4x4FD matCameraToPerspective_;
+  Matrix4x4FD matCameraToScreen_;
   Matrix4x4FD matPerspectiveToSreen_;
 
   Matrix4x4FD matWorldToScreen_;
-
-private:
-  friend
-  std::shared_ptr<CameraUVN> createUVNCamera(const Point4FD& pos, const Point4FD& targetPos, double fovDegree,
-                                             double nearZ, double farZ, double screenWidth, double screenHeight);
 };
 
 typedef std::shared_ptr<CameraUVN> CameraPtr;
 
-CameraPtr createUVNCamera(const Point4FD& pos, const Point4FD& targetPos, double fov,
-                          double nearZ, double farZ, double screenWidth, double screenHeight);
 
 }// s3d
 

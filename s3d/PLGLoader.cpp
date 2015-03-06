@@ -95,47 +95,46 @@ void PLGLoader::parse(const std::string& filename, std::string& name, VertexList
         poly.setAttr(kPolygonAttr2Side);
 
       if (desc & PLX_COLOR_MODE_RGB_FLAG) {
-        uint8_t red = ((desc & 0x0f00) >> 8) + 64;
-        uint8_t green = ((desc & 0x00f0) >> 4) + 64;;
-        uint8_t blue = (desc & 0x000f) + 64;;
+        uint8_t red = ((desc & 0x0f00) >> 8) + 32;
+        uint8_t green = ((desc & 0x00f0) >> 4) + 32;;
+        uint8_t blue = (desc & 0x000f) + 32;;
         poly.setColor(Color(red, green, blue));
       } else {
         poly.setColor(Color(0xff, 0, 0));
       }
 
-     // int shadeMode = (desc & PLX_SHADE_MODE_MASK);
+      #define PLX_SHADE_MODE_MASK   0x6000   // mask to extract shading mode
+      // shading mode of polygon
+      #define PLX_SHADE_MODE_PURE_FLAG      0x0000  // this poly is a constant color
+      #define PLX_SHADE_MODE_CONSTANT_FLAG  0x0000  // alias
+      #define PLX_SHADE_MODE_FLAT_FLAG      0x2000  // this poly uses flat shading
+      #define PLX_SHADE_MODE_GOURAUD_FLAG   0x4000  // this poly used gouraud shading
+      #define PLX_SHADE_MODE_PHONG_FLAG     0x6000  // this poly uses phong shading
+      #define PLX_SHADE_MODE_FASTPHONG_FLAG 0x6000  // this poly uses phong shading (alias)
 
-     //// set polygon shading mode
-     // switch (shadeMode)
-     //     {
-     //     case PLX_SHADE_MODE_PURE_FLAG: {
+     int shadeMode = (desc & PLX_SHADE_MODE_MASK);
+     // set polygon shading mode
+     switch (shadeMode) {
+          case PLX_SHADE_MODE_PURE_FLAG: {
+            poly.setAttr(kPolygonAttrShadeModePureFlag);
+          } break;
 
-     //     } break;
+          case PLX_SHADE_MODE_FLAT_FLAG: {
+            poly.setAttr(kPolygonAttrShadeModeFlatFlag);
+          } break;
 
-     //     case PLX_SHADE_MODE_FLAT_FLAG: {
+          case PLX_SHADE_MODE_GOURAUD_FLAG: {
+         
+          // the vertices from this polygon all need normals, set that in the flags attribute
 
-     //     } break;
+          } break;
 
-     //     case PLX_SHADE_MODE_GOURAUD_FLAG: {
-     //    
-     //     // the vertices from this polygon all need normals, set that in the flags attribute
-     //     SET_BIT(obj->vlist_local[ obj->plist[poly].vert[0] ].attr, VERTEX4DTV1_ATTR_NORMAL); 
-     //     SET_BIT(obj->vlist_local[ obj->plist[poly].vert[1] ].attr, VERTEX4DTV1_ATTR_NORMAL); 
-     //     SET_BIT(obj->vlist_local[ obj->plist[poly].vert[2] ].attr, VERTEX4DTV1_ATTR_NORMAL); 
+          case PLX_SHADE_MODE_PHONG_FLAG: {
+          // the vertices from this polygon all need normals, set that in the flags attribute
+          } break;
 
-     //     } break;
-
-     //     case PLX_SHADE_MODE_PHONG_FLAG: {
-     //     // the vertices from this polygon all need normals, set that in the flags attribute
-     //     SET_BIT(obj->vlist_local[ obj->plist[poly].vert[0] ].attr, VERTEX4DTV1_ATTR_NORMAL); 
-     //     SET_BIT(obj->vlist_local[ obj->plist[poly].vert[1] ].attr, VERTEX4DTV1_ATTR_NORMAL); 
-     //     SET_BIT(obj->vlist_local[ obj->plist[poly].vert[2] ].attr, VERTEX4DTV1_ATTR_NORMAL); 
-
-     //     } break;
-
-     //     default: break;
-     //     } // end switch
-
+          default: break;
+     } // end switch
 
       polys.push_back(poly);
       if (++polysRead == num_polys)

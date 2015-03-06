@@ -56,13 +56,13 @@ Window::~Window() {
   assert(hWnd_ == NULL);
 }
 
-static double anglex = -0 * 3.1415927 / 180;;
+static double anglex = 0 * 3.1415927 / 180;
 static double angley = 0 * 3.1415927 / 180;
 static double anglez = 0 * 3.1415927 / 180;
 
 double wx = 0;
 double wy = 0;
-double wz = 500;
+double wz = 100;
 
 double cx = 0;
 double cy = 0;
@@ -223,24 +223,19 @@ void Window::needRedraw() {
   ::InvalidateRect(NULL, NULL, FALSE);
 }
 
-
-
 void Window::onDraw(Renderer& renderer) {
-  // for (int i = 0; i<1000; ++i)
-  // renderer.drawLine2D_DDA(Point2<int>(rand() % 1024, rand() % 1024), Point2<int>(rand() % rand() % 1024, 230), Color(rand() % 255, rand() % 255, rand() % 255));
   RECT rect;
   ::GetWindowRect(hWnd_, &rect);
   const int winWidth = rect.right - rect.left + 1;
   const int winHeight = rect.bottom - rect.top + 1;
 
   Object obj(1, "testobj");
-
   PLGLoader plgloader;
   try {
     std::string name; 
     VertexList<Point4<double>> vlist;
     std::vector<Polygon<3>> polys;
-    plgloader.parse("D:\\work\\t3dlib\\T3DIICHAP07\\cube1.plg", name, vlist, polys, 10);
+    plgloader.parse("D:\\work\\t3dlib\\T3DIICHAP07\\cube2.plg", name, vlist, polys, 4);
 
     for (auto pt : vlist) {
       obj.addVertex(pt);
@@ -273,12 +268,12 @@ void Window::onDraw(Renderer& renderer) {
   int viewWidth = winWidth;
   int viewHeight = winHeight;
 
-  auto camera = createUVNCamera({cx, cy, cz }, {cx, cy, cz + 1}, 140, 50, 1000, viewWidth, winHeight);
-  auto matWorldToCameraMatrix4x4FD = camera->getWorldToCameraMatrix4x4FD();
+  CameraUVN camera({cx, cy, cz - 100}, {cx, cy, 1}, 90, 10, 1000, viewWidth, winHeight);
+  auto matWorldToCameraMatrix4x4FD = camera.getWorldToCameraMatrix4x4FD();
 
   Point4FD sphererPt = {wx, wy, wz};
   sphererPt = sphererPt * matWorldToCameraMatrix4x4FD;
-  if (camera->isSphereOutOfView(sphererPt, 100))
+  if (camera.isSphereOutOfView(sphererPt, 1))
     return;
 
   auto transVerit = obj.transVertexList_.begin();
@@ -293,26 +288,24 @@ void Window::onDraw(Renderer& renderer) {
     const auto v = obj.transVertexList_[itp.at(2)] - obj.transVertexList_[itp.at(0)];
 
     itp.normal_ = u.crossProduct(v);
-    Vector4FD vp(obj.transVertexList_[itp.at(0)], camera->getPosition());
+    Vector4FD vp(obj.transVertexList_[itp.at(0)], camera.getPosition());
     if (vp.dotProduct(itp.normal_) > 0.) {
       itp.setState(kPolygonStateVisible);
     }
   }
 
-
-  auto mat = camera->getCameraToProjectMatrix4x4FD() * camera->getPerspectiveToScreenMatrix4x4FD();
-
+  auto matCameraToScreen = camera.getCameraToScreenMatrix4x4FD();
   transVerit = obj.transVertexList_.begin();
   while (transVerit != obj.transVertexList_.end()) {
     const auto pt = *transVerit;
-    *transVerit = pt * mat;
+    *transVerit = pt * matCameraToScreen;
     ++transVerit;
   }
 
 
   //setCamera(obj, {cx, cy, cz}, -0, -0, -0);
 
-  //mat = camera->getCameraToProjectMatrix4x4FD();
+  //mat = camera.getCameraToProjectMatrix4x4FD();
 
   //transVerit = obj.transVertexList_.begin();
   //while (transVerit != obj.transVertexList_.end()) {
@@ -343,9 +336,12 @@ void Window::onDraw(Renderer& renderer) {
 
     id = itp[2];
     Point2<int> p2 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
-    renderer.drawTriangle2D(p0, p1, p2, itp.getColor());
+    renderer.fillTriangle2D(p0, p1, p2, itp.getColor());
   }
 
+  const int icd = 0, & const r = 0;
+  const int *ppp;
+  
 
   //int linestart = 8;
   //renderer.drawLine2D({(int)obj.transVertexList_[linestart].x_, (int)obj.transVertexList_[linestart].y_}, {(int)obj.transVertexList_[linestart + 1].x_, (int)obj.transVertexList_[linestart+1].y_}, Color(255, 0, 0));

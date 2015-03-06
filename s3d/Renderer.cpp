@@ -48,6 +48,9 @@ void Renderer::drawLine2D_Vertical(const Point2<int>& p0, const Point2<int>& p1,
 void Renderer::drawLine2D_DDA(const Point2<int>& p0, const Point2<int>& p1, const Color& c) {
   const Point2<int> d = p1 - p0;
   const int steps = abs(d.y_) > abs(d.x_) ? abs(d.y_) : abs(d.x_);
+  if (steps == 0)
+    return;
+
   const float dx = float(d.x_) / float(steps);
   const float dy = float(d.y_) / float(steps);
 
@@ -166,6 +169,8 @@ void Renderer::fillFlatTopTriangle2D(const Point2<int>& p0, const Point2<int>& p
   }
 
   assert(dp0.y_ == dp1.y_);
+  assert(dp2.y_ - dp0.y_ != 0.);
+  assert(dp2.y_ - dp1.y_ != 0.);
 
   const double m0 = double(dp2.x_ - dp0.x_) / double(dp2.y_ - dp0.y_);
   const double m1 = double(dp2.x_ - dp1.x_) / double(dp2.y_ - dp1.y_);
@@ -198,6 +203,8 @@ void Renderer::fillFlatBottomTriangle2D(const Point2<int>& p0, const Point2<int>
   }
 
   assert(dp0.y_ == dp1.y_);
+  assert(dp2.y_ - dp0.y_ != 0.);
+  assert(dp2.y_ - dp1.y_ != 0.);
 
   const double m0 = -double(dp2.x_ - dp0.x_) / double(dp2.y_ - dp0.y_);
   const double m1 = -double(dp2.x_ - dp1.x_) / double(dp2.y_ - dp1.y_);
@@ -233,6 +240,7 @@ void Renderer::fillTriangle2D(const Point2<int>& p0, const Point2<int>& p1, cons
   } else if (dp1.y_ == dp2.y_) {
     return fillFlatBottomTriangle2D(dp1, dp2, dp0, c);
   } else {
+    assert(dp2.y_ - dp0.y_ != 0.);
     const double m = double(dp2.x_ - dp0.x_) / double(dp2.y_ - dp0.y_);
     const int ix = static_cast<int>(dp0.x_ + (dp1.y_ - dp0.y_)*m + 0.5);
 
@@ -243,7 +251,7 @@ void Renderer::fillTriangle2D(const Point2<int>& p0, const Point2<int>& p1, cons
 
 namespace
 {
-Point2<int> intersectPoint(const unsigned pCode, const Point2<int>& p, const int dx, const int dy, int clipMinX, int clipMinY, int clipMaxX, int clipMaxY) {
+Point2<int> intersectPoint(const unsigned pCode, const Point2<int>& p, const double dx, const double dy, int clipMinX, int clipMinY, int clipMaxX, int clipMaxY) {
   static const int clipCodeC = 0x0; //center
 
   static const int clipCodeW = 0x1; //west
@@ -272,33 +280,39 @@ Point2<int> intersectPoint(const unsigned pCode, const Point2<int>& p, const int
     break;
     case clipCodeW:
     {
+      assert(dx != 0.);
       x = clipMinX;
       y = static_cast<int>(p.y_ + (clipMinX - p.x_) * (dy / dx) + 0.5);
     }
     break;
     case clipCodeE:
     {
+      assert(dx != 0.);
       x = clipMaxX;
       y = static_cast<int>(p.y_ + (clipMaxX - p.x_) * (dy / dx) + 0.5);
     }
     break;
     case clipCodeN:
     {
+      assert(dy != 0.);
       x = static_cast<int>(p.x_ + (clipMinY - p.y_)  * (dx / dy) + 0.5);
       y = clipMinY;
     }
     break;
     case clipCodeS:
     {
+      assert(dy != 0.);
       x = static_cast<int>(p.x_ + (clipMaxY - p.y_) * (dx / dy)+ 0.5);;
       y = clipMaxY;
     }
     break;
     case clipCodeNW:
     {
+      assert(dy != 0.);
       x = static_cast<int>(p.x_ + (clipMinY - p.y_)  * (dx / dy) + 0.5);
       y = clipMinY;
       if (x < clipMinX || x > clipMaxX) {
+        assert(dx != 0.);
         x = clipMinX;
         y = static_cast<int>(p.y_ + (clipMinX - p.x_) * (dy / dx) + 0.5);
       }
@@ -306,9 +320,11 @@ Point2<int> intersectPoint(const unsigned pCode, const Point2<int>& p, const int
     break;
     case clipCodeSW:
     {
+      assert(dy != 0.);
       x = static_cast<int>(p.x_ + (clipMaxY - p.y_) * (dx / dy) + 0.5);;
       y = clipMaxY;
       if (x < clipMinX || x > clipMaxX) {
+        assert(dx != 0.);
         x = clipMinX;
         y = static_cast<int>(p.y_ + (clipMinX - p.x_) * (dy / dx) +0.5);
       }     
@@ -316,9 +332,11 @@ Point2<int> intersectPoint(const unsigned pCode, const Point2<int>& p, const int
     break;
     case clipCodeNE:
     {
+      assert(dy != 0.);
       x = static_cast<int>(p.x_ + (clipMinY - p.y_)  * (dx / dy) + 0.5);
       y = clipMinY;
       if (x < clipMinX || x > clipMaxX) {
+        assert(dx != 0.);
         x = clipMaxX;
         y = static_cast<int>(p.y_ + (clipMaxX - p.x_) * (dy / dx) +0.5);
       } 
@@ -326,9 +344,11 @@ Point2<int> intersectPoint(const unsigned pCode, const Point2<int>& p, const int
     break;
     case clipCodeSE:
     {
+      assert(dy != 0.);
       x = static_cast<int>(p.x_ + (clipMaxY - p.y_) * (dx / dy)+ 0.5);;
       y = clipMaxY;
       if (x < clipMinX || x > clipMaxX) {
+        assert(dx != 0.);
         x = clipMaxX;
         y = static_cast<int>(p.y_ + (clipMaxX - p.x_) * (dy / dx) +0.5);
       } 

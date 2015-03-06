@@ -460,7 +460,6 @@ inline Matrix<T, M, Cols> matrixSolve(const Matrix<T, M, M>& c, const Matrix<T, 
   return c.inverse() * y;// return Matrix for X
 }
 
-
 typedef Matrix<float, 1U, 2U> Matrix1x2F;
 typedef Matrix<float, 1U, 3U> Matrix1x3F;
 typedef Matrix<float, 1U, 4U> Matrix1x4F;
