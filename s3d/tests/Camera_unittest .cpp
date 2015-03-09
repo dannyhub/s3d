@@ -10,13 +10,11 @@ using namespace s3d;
 
 
 BOOST_AUTO_TEST_CASE(CameraUVN_unittest) {
-  const string s = "keep out";
-  auto &xss = s[0];
-  const string& sx = s;
-  auto &xxx = sx;
+  //const string s = "keep out";
+  //auto &xss = s[0];
+  //const string& sx = s;
+  //auto &xxx = sx;
 
-  for (const auto &c  : s){
-  }
 
   {
     CameraUVN camera({0, 0, -100}, {0, 0, 1}, 90, 10, 1000, 100, 100);

@@ -55,6 +55,10 @@ public:
     y_ /= len;
   }
 
+  bool isNormalize() const {
+    return equalZero(this->length() - T(1));
+  }
+
   T dotProduct(const Vector2& v) const ;
   T cos(const Vector2& v) const;
   T angle(const Vector2& v) const;
@@ -101,6 +105,10 @@ public:
     x_ /= len;
     y_ /= len;
     z_ /= len;
+  }
+
+  bool isNormalize() const {
+    return equalZero(this->length() - T(1));
   }
 
   T dotProduct(const Vector3& v) const;
@@ -155,6 +163,10 @@ public:
     x_ /= len;
     y_ /= len;
     z_ /= len;
+  }
+
+  bool isNormalize() const {
+    return equalZero(this->length() - T(1));
   }
 
   T dotProduct(const Vector4& v) const;
@@ -222,11 +234,6 @@ Vector2<T>& operator -= (Vector2<T>& v1, const Vector2<T>& v2) {
 template<typename T, typename ValueT>
 Vector2<T> operator * (const Vector2<T>& v1, ValueT value) {
   return  Vector2<T>(v1.x_ * value, v1.y_ * value);
-}
-
-template<typename T, typename ValueT>
-inline Vector2<T> operator * (ValueT value, const Vector2<T>& v1) {
-  return operator *(v1, value);
 }
 
 template<typename T, typename ValueT>
@@ -320,11 +327,6 @@ Vector3<T>& operator -= (Vector3<T>& v1, const Vector3<T>& v2) {
 template<typename T, typename ValueT>
 Vector3<T> operator * (const Vector3<T>& v1, ValueT value) {
   return  Vector3<T>(v1.x_ * value, v1.y_ * value, v1.z_ * value);
-}
-
-template<typename T, typename ValueT>
-inline Vector3<T> operator * (ValueT value, const Vector3<T>& v1) {
-  return operator *(v1, value);
 }
 
 template<typename T, typename ValueT>
@@ -430,11 +432,6 @@ Vector4<T>& operator -= (Vector4<T>& v1, const Vector4<T>& v2) {
 template<typename T, typename ValueT>
 Vector4<T> operator * (const Vector4<T>& v1, ValueT value) {
   return  Vector4<T>(v1.x_ * value, v1.y_ * value, v1.z_ * value);
-}
-
-template<typename T, typename ValueT>
-inline Vector4<T> operator * (ValueT value, const Vector4<T>& v1) {
-  return operator *(v1, value);
 }
 
 template<typename T, typename ValueT>

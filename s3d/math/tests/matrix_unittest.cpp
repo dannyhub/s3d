@@ -149,14 +149,14 @@ BOOST_AUTO_TEST_CASE(testMatrix3x3) {
 
     {
       auto m = m1 * 12;
-      BOOST_CHECK(m == 12 * m1);
+      BOOST_CHECK(m == m1 * 12);
     }
 
     {
       auto m = m1;
       m *= 12;
 
-      BOOST_CHECK(m == 12 * m1);
+      BOOST_CHECK(m == m1 * 12);
     }
 
     BOOST_CHECK_EQUAL(matrixDet(m1), matrix_impl::computeDet(m1));

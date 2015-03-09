@@ -7,6 +7,7 @@
 #include "Object.h"
 #include "Camera.h"
 #include "PLGLoader.h"
+#include "Light.h"
 
 using namespace std;
 
@@ -223,6 +224,7 @@ void Window::needRedraw() {
   ::InvalidateRect(NULL, NULL, FALSE);
 }
 
+
 void Window::onDraw(Renderer& renderer) {
   RECT rect;
   ::GetWindowRect(hWnd_, &rect);
@@ -235,7 +237,7 @@ void Window::onDraw(Renderer& renderer) {
     std::string name; 
     VertexList<Point4<double>> vlist;
     std::vector<Polygon<3>> polys;
-    plgloader.parse("D:\\work\\t3dlib\\T3DIICHAP07\\cube2.plg", name, vlist, polys, 4);
+    plgloader.parse("D:\\work\\t3dlib\\T3DIICHAP07\\tank1.plg", name, vlist, polys, 0.5);
 
     for (auto pt : vlist) {
       obj.addVertex(pt);
@@ -266,7 +268,7 @@ void Window::onDraw(Renderer& renderer) {
   addToWorld(obj, wx, wy, wz);
 
   int viewWidth = winWidth;
-  int viewHeight = winHeight;
+//  int viewHeight = winHeight;
 
   CameraUVN camera({cx, cy, cz - 100}, {cx, cy, 1}, 90, 10, 1000, viewWidth, winHeight);
   auto matWorldToCameraMatrix4x4FD = camera.getWorldToCameraMatrix4x4FD();
@@ -288,10 +290,16 @@ void Window::onDraw(Renderer& renderer) {
     const auto v = obj.transVertexList_[itp.at(2)] - obj.transVertexList_[itp.at(0)];
 
     itp.normal_ = u.crossProduct(v);
+    itp.normal_.normalizeSelf();
     Vector4FD vp(obj.transVertexList_[itp.at(0)], camera.getPosition());
     if (vp.dotProduct(itp.normal_) > 0.) {
       itp.setState(kPolygonStateVisible);
     }
+  }
+
+  AmbientLight ambientLight(Color(255, 255, 255));
+  for (auto& itp : obj.polygons_) {
+    itp.setColor(itp.getColor() * ambientLight.computeIntensity());
   }
 
   auto matCameraToScreen = camera.getCameraToScreenMatrix4x4FD();
@@ -302,31 +310,14 @@ void Window::onDraw(Renderer& renderer) {
     ++transVerit;
   }
 
-
-  //setCamera(obj, {cx, cy, cz}, -0, -0, -0);
-
-  //mat = camera.getCameraToProjectMatrix4x4FD();
-
-  //transVerit = obj.transVertexList_.begin();
-  //while (transVerit != obj.transVertexList_.end()) {
-  //  const auto pt = *transVerit;
-  //  *transVerit = pt * mat;
-  //  ++transVerit;
-  //}
-
   for (auto& itp : obj.polygons_) {
     if (itp.getState() & kPolygonStateVisible) {
         obj.transPolygons_.push_back(itp);
     }
   }
-  //perspectiveProject(obj, viewWidth, viewHeight);
-  //perspectiveProject(obj, 90, viewWidth, viewHeight);
-  //const int xx = 100;
-  //int bb[xx] = {0};
-  //int *p = (int*)&xx;
-  //*p = 1111;
 
-  //const int &i = 3.14;
+
+
   for (auto itp : obj.transPolygons_) {
     int id = itp[0];
     Point2<int> p0 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
@@ -339,8 +330,8 @@ void Window::onDraw(Renderer& renderer) {
     renderer.fillTriangle2D(p0, p1, p2, itp.getColor());
   }
 
-  const int icd = 0, & const r = 0;
-  const int *ppp;
+//  const int icd = 0, & const r = 0;
+//  const int *ppp;
   
 
   //int linestart = 8;

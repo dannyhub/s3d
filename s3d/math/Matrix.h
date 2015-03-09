@@ -182,12 +182,6 @@ Matrix<T, Rows, Cols> operator * (const Matrix<T, Rows, Cols>& m1, ValueT value)
 }
 
 template<typename T, unsigned int Rows, unsigned int Cols, typename ValueT>
-inline Matrix<T, Rows, Cols> operator * (ValueT value, const Matrix<T, Rows, Cols>& m1) {
-  return operator *(m1, value);
-}
-
-
-template<typename T, unsigned int Rows, unsigned int Cols, typename ValueT>
 Matrix<T, Rows, Cols>& operator *= (Matrix<T, Rows, Cols>& m1, ValueT value) {
   for (unsigned int r = 0; r < Rows; ++r) {
     for (unsigned int c = 0; c < Cols; ++c) {

@@ -21,7 +21,7 @@ namespace s3d
     }
   }
 
-  void backFaceRemove(Object& obj, const Point4FD& viewLine, double /*farZ*/) {
+  void backFaceRemove(Object& obj, const Point4FD& /*viewLine*/, double /*farZ*/) {
     for (auto itp : obj.polygons_) {
       //if (itp.normal_.dotProduct(viewLine) > 0.) {
         obj.transPolygons_.push_back(itp);

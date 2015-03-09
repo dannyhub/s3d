@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(testVector2) {
   }
 
   {
-    auto v = 3 * v1;
+    auto v = v1 * 3;
     BOOST_CHECK(v == v4);
 
     BOOST_CHECK_EQUAL(v2.length(), 5);
@@ -105,9 +105,9 @@ BOOST_AUTO_TEST_CASE(testVector2) {
     //BOOST_CHECK_EQUAL(v, v1.length() * ::cos(45.f * 3.1415927f / 180.f));
   }
 
-  const int i = 42;
-  auto j= i;
-  const auto &k = i;
-  auto *p = &i;
-  const auto j2 = i, &k2 = i;
+  //const int i = 42;
+  //auto j= i;
+  //const auto &k = i;
+  //auto *p = &i;
+  //const auto j2 = i, &k2 = i;
 }
