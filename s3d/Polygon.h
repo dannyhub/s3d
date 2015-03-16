@@ -17,7 +17,7 @@ enum PolygonState {
 };
 
 enum PolygonAttr {
-  kPolygonAttr2Start = 0,
+  kPolygonAttrVoid = 0,
   kPolygonAttr2Side,
   kPolygonAttrShadeModePureFlag,
   kPolygonAttrShadeModeFlatFlag,
@@ -32,10 +32,10 @@ public:
   typedef uint32_t* iterator;
   typedef const uint32_t* const_iterator;
 
-  Polygon() : state_(kPolygonStateInVisible) {
+  Polygon() : state_(kPolygonStateInVisible), attr_(kPolygonAttrVoid) {
   }
 
-  Polygon(const std::initializer_list<value_type>& ilist) : state_(kPolygonStateInVisible), attr_(kPolygonAttr2Start){
+  Polygon(const std::initializer_list<value_type>& ilist) : state_(kPolygonStateInVisible), attr_(kPolygonAttrVoid) {
     assert(ilist.size() == VertexNum);
 
     std::copy(ilist.begin(), ilist.end(), vertices);
@@ -55,6 +55,7 @@ public:
     attr_ = p.attr_;
     normal_ = p.normal_;
     std::copy(p.vertices, p.vertices + VertexNum, vertices);
+    return *this;
   }
 
   Color getColor() const {

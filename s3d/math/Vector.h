@@ -46,6 +46,8 @@ public:
   T length() const;
   Vector2 normalize() const;
   void normalizeSelf() {
+    assert(std::is_floating_point<T>::value);
+
     const T len = this->length();
     if (vector_impl::equalZero(len)) {
       throw VectorDivideZeroException("Vector3 length is zero");
@@ -97,6 +99,7 @@ public:
   Vector3 normalize() const;
 
   void normalizeSelf() {
+    assert(std::is_floating_point<T>::value);
     const T len = this->length();
     if (vector_impl::equalZero(len)) {
       throw VectorDivideZeroException("Vector3 length is zero");
@@ -135,7 +138,8 @@ public:
   Vector4(T x, T y, T z) : x_(x), y_(y), z_(z), w_(T(1)) {
   }
 
-  explicit Vector4(const Vector3<T>& v3) : x_(v3.x_), y_(v3.y_), z_(v3.z_), w_(T(1)) {
+  template<typename T2>
+  Vector4(const Vector3<T2>& v3) : x_(v3.x_), y_(v3.y_), z_(v3.z_), w_(T(1)) {
   }
 
   Vector4(const std::initializer_list<T>& ilist) {
@@ -148,13 +152,22 @@ public:
     w_ = T(1);
   }
 
-  template<typename POINT>
-  Vector4(const POINT& p0, const POINT& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_), z_(p1.z_ - p0.z_), w_(T(1)) {
+  template<typename T2>
+  Vector4& operator= (const Vector3<T2>& v3) {
+    x_ = v3.x_;
+    y_ = v3.y_;
+    z_ = v3.z_;
+    w_ = T(1);
+  }
+  
+  template<typename POINT0, typename POINT1>
+  Vector4(const POINT0& p0, const POINT1& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_), z_(p1.z_ - p0.z_), w_(T(1)) {
   }
 
   T length() const;
   Vector4 normalize() const;
   void normalizeSelf() {
+    assert(std::is_floating_point<T>::value);
     const T len = this->length();
     if (vector_impl::equalZero(len)) {
       throw VectorDivideZeroException("Vector4 length is zero");
@@ -251,6 +264,8 @@ T Vector2<T>::length() const {
 
 template<typename T>
 Vector2<T> Vector2<T>::normalize() const {
+  assert(std::is_floating_point<T>::value);
+
   Vector2<T> v(*this);
   const T len = this->length();
   if (vector_impl::equalZero(len)) {
@@ -269,6 +284,7 @@ inline T Vector2<T>::dotProduct(const Vector2<T>& v2) const {
 
 template<typename T>
 inline T Vector2<T>::cos(const Vector2<T>& v2) const {
+  assert(std::is_floating_point<T>::value);
   const auto v1len = this->length();
   const auto v2len = v2.length();
   return this->dotProduct(v2) / (v1len * v2len);
@@ -276,6 +292,7 @@ inline T Vector2<T>::cos(const Vector2<T>& v2) const {
 
 template<typename T>
 inline T Vector2<T>::angle(const Vector2<T>& v2) const {
+  assert(std::is_floating_point<T>::value);
   return ::acos(this->cos(v2));
 }
 
@@ -344,6 +361,7 @@ T Vector3<T>::length() const {
 
 template<typename T>
 Vector3<T> Vector3<T>::normalize() const {
+  assert(std::is_floating_point<T>::value);
   Vector3<T> v(*this);
   const T len = this->length();
   if (vector_impl::equalZero(len)) {
@@ -363,6 +381,7 @@ inline T Vector3<T>::dotProduct(const Vector3<T>& v2) const {
 
 template<typename T>
 inline T Vector3<T>::cos(const Vector3<T>& v2) const {
+  assert(std::is_floating_point<T>::value);
   const auto v1len = this->length();
   const auto v2len = v2.length();
   return this->dotProduct(v2) / (v1len * v2len);
@@ -384,9 +403,9 @@ template<typename T>
 Vector3<T> Vector3<T>::crossProduct(const Vector3<T>& v2) const {
   Vector3<T> vn;
 
-  vn.x_ = ((this->y_ * v2.z_) - (this->z_ * v2.y_));
-  vn.y_ = -((this->x_ * v2.z_) - (this->z_ * v2.x_));
-  vn.z_ = ((this->x_ * v2.y_) - (this->y_ * v2.x_));
+  vn.x_ = (this->y_ * v2.z_) - (this->z_ * v2.y_);
+  vn.y_ = (this->z_ * v2.x_) - (this->x_ * v2.z_);
+  vn.z_ = (this->x_ * v2.y_) - (this->y_ * v2.x_);
 
   return vn;
 }
@@ -449,6 +468,7 @@ T Vector4<T>::length() const {
 
 template<typename T>
 Vector4<T> Vector4<T>::normalize() const {
+  assert(std::is_floating_point<T>::value);
   Vector4<T> v(*this);
   const T len = this->length();
   if (vector_impl::equalZero(len)) {
@@ -468,6 +488,7 @@ inline T Vector4<T>::dotProduct(const Vector4<T>& v2) const {
 
 template<typename T>
 inline T Vector4<T>::cos(const Vector4<T>& v2) const {
+  assert(std::is_floating_point<T>::value);
   const auto v1len = this->length();
   const auto v2len = v2.length();
   return this->dotProduct(v2) / (v1len * v2len);
@@ -489,9 +510,9 @@ template<typename T>
 Vector4<T> Vector4<T>::crossProduct(const Vector4<T>& v2) const {
   Vector4<T> vn;
 
-  vn.x_ = ((this->y_ * v2.z_) - (this->z_ * v2.y_));
-  vn.y_ = -((this->x_ * v2.z_) - (this->z_ * v2.x_));
-  vn.z_ = ((this->x_ * v2.y_) - (this->y_ * v2.x_));
+  vn.x_ = (this->y_ * v2.z_) - (this->z_ * v2.y_);
+  vn.y_ = (this->z_ * v2.x_) - (this->x_ * v2.z_);
+  vn.z_ = (this->x_ * v2.y_) - (this->y_ * v2.x_);
 
   return vn;
 }

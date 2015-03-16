@@ -1,11 +1,7 @@
 #pragma once
 #include "math/Math.h"
-#include "math/Point.h"
-#include "math/Vector.h"
-#include "math/Matrix.h"
 #include "Polygon.h"
 #include "VertexList.h"
-#include "math/Geometry.h"
 
 #include <string>
 #include <vector>
@@ -44,7 +40,7 @@ public:
   }
 
   bool isSphereOutOfView(const Point4FD& position, double radius);
-  bool isBackFacePlane(const Vector4FD& n);
+  bool isBackface(const Point4FD& pt, const Vector4FD& normal);
 
   Point4FD getPosition() const {
     return position_;

@@ -29,11 +29,6 @@ namespace s3d
   }
 
   template<>
-  inline int degreeToRadius<int>(int d) {
-    return  static_cast<int>(d * kPI / 180. + 0.5);
-  }
-
-  template<>
   inline double radiusToDegree<double>(double r) {
     return  r * 180. / kPI;
   }
@@ -46,6 +41,11 @@ namespace s3d
   template<>
   inline int radiusToDegree<int>(int r) {
     return  static_cast<int>(r * 180. / kPI + 0.5);
+  }
+
+  template<typename T>
+  inline bool equal(T a, T b) {
+    return equalZero(a - b);
   }
 
   inline bool equalZero(int a) {

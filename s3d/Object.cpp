@@ -40,18 +40,18 @@ namespace s3d
     const auto sinz = ::sin(anglez);
 
     //rotate with: YXZ
-    Matrix4x4FD rotateYMat = {cosy, 0, -siny, 0,
+    Matrix4x4FD rotateYMat   {cosy, 0, -siny, 0,
                               0,    1,  0,    0,
                               siny, 0,  cosy, 0,
                               0,    0,   0,   1};
 
-    Matrix4x4FD rotateXMat = {1, 0,     0,    0,
+    Matrix4x4FD rotateXMat   {1, 0,     0,    0,
                               0, cosx, -sinx, 0,
                               0, sinx,  cosx, 0,
                               0, 0,     0,    1};
 
 
-    Matrix4x4FD rotateZMat = {cosz, -sinz, 0, 0,
+    Matrix4x4FD rotateZMat   {cosz, -sinz, 0, 0,
                               sinz,  cosz, 0, 0,
                               0,     0,    1, 0,
                               0,     0,    0, 1};
@@ -91,24 +91,24 @@ namespace s3d
     viewLine.y_ = y;
     backFaceRemove(obj, viewLine);
 
-    Matrix4x4FD translateMat = {1, 0, 0, 0,
+    Matrix4x4FD translateMat   {1, 0, 0, 0,
                                 0, 1, 0, 0,
                                 0, 0, 1, 0,
                                 -pt.x_, -pt.y_, -pt.z_, 1};
 
     //rotate with: YXZ
-    Matrix4x4FD rotateYMat = {cosy, 0, -siny, 0,
+    Matrix4x4FD rotateYMat   {cosy, 0, -siny, 0,
                               0,    1,  0,    0,
                               siny, 0,  cosy, 0,
                               0,    0,   0,   1};
 
-    Matrix4x4FD rotateXMat = {1, 0,     0,    0,
+    Matrix4x4FD rotateXMat   {1, 0,     0,    0,
                               0, cosx, -sinx, 0,
                               0, sinx,  cosx, 0,
                               0, 0,     0,    1};
 
 
-    Matrix4x4FD rotateZMat = {cosz, -sinz, 0, 0,
+    Matrix4x4FD rotateZMat   {cosz, -sinz, 0, 0,
                               sinz,  cosz, 0, 0,
                               0,     0,    1, 0,
                               0,     0,    0, 1};
@@ -135,7 +135,7 @@ namespace s3d
     //   = -py * ((viewHeight/2) - 1/2) - ((viewHeight/2) - 1/2) + (viewHeight - 1)
     //   = -py * ((viewHeight/2) - 1/2) + ((viewHeight/2) - 1/2)
     const auto widthHeighRatio = viewWidth / viewHeight;
-    Matrix4x4FD pmat = {1, 0, 0, 0,
+    Matrix4x4FD pmat   {1, 0, 0, 0,
                         0, widthHeighRatio, 0, 0,
                         0, 0, 1, 1,
                         0, 0, 0, 0};
@@ -143,7 +143,7 @@ namespace s3d
     const auto xalpha = viewWidth * 0.5 - 0.5;
     const auto ybeta = viewHeight * 0.5 - 0.5;
     
-    Matrix4x4FD vmat = {xalpha, 0,     0,  0,
+    Matrix4x4FD vmat   {xalpha, 0,     0,  0,
                         0,     -ybeta, 0,  0,
                         0,      0,     1,  0,
                         xalpha, ybeta, 0,  1};
@@ -160,12 +160,12 @@ namespace s3d
   void perspectiveProject(Object& obj, double fieldOfViewDegree, double viewWidth, double viewHeight) {
     const double viewingDistance = viewWidth * 0.5  / ::tan(degreeToRadius(fieldOfViewDegree / 2.));
 
-    Matrix4x4FD pmat = {viewingDistance, 0,               0, 0,
+    Matrix4x4FD pmat   {viewingDistance, 0,               0, 0,
                         0,               viewingDistance, 0, 0,
                         0,               0,               1, 1.,
                         0,               0,               0, 0};
 
-    Matrix4x4FD vmat = {1, 0,    0, 0,
+    Matrix4x4FD vmat   {1, 0,    0, 0,
                         0, -1,   0, 0,
                         0, 0,    1, 0,
                         viewWidth * 0.5, (viewHeight - 1) - viewHeight*0.5, 0, 1};

@@ -1,13 +1,13 @@
-#include "stdafx.h"
-#include "Window.h"
 #include "Renderer.h"
-
-#include <unordered_map>
-
 #include "Object.h"
 #include "Camera.h"
 #include "PLGLoader.h"
 #include "Light.h"
+
+#include "stdafx.h"
+#include "Window.h"
+
+#include <unordered_map>
 
 using namespace std;
 
@@ -214,30 +214,14 @@ LRESULT Window::wndProc(UINT message, WPARAM wParam, LPARAM lParam) {
   return 0;
 }
 
-bool Window::onCreate() {
-  return true;
-}
-
-void Window::needRedraw() {
-  RECT rect;
-  ::GetWindowRect(hWnd_, &rect);
-  ::InvalidateRect(NULL, NULL, FALSE);
-}
-
-
-void Window::onDraw(Renderer& renderer) {
-  RECT rect;
-  ::GetWindowRect(hWnd_, &rect);
-  const int winWidth = rect.right - rect.left + 1;
-  const int winHeight = rect.bottom - rect.top + 1;
-
-  Object obj(1, "testobj");
+void loadObject(Object &obj, const char* filename, float scale = 1.0) {
+  const std::string path = "D:\\work\\t3dlib\\T3DIICHAP07\\";
   PLGLoader plgloader;
   try {
-    std::string name; 
+    std::string name;
     VertexList<Point4<double>> vlist;
     std::vector<Polygon<3>> polys;
-    plgloader.parse("D:\\work\\t3dlib\\T3DIICHAP07\\tank1.plg", name, vlist, polys, 0.5);
+    plgloader.parse(path + filename, name, vlist, polys, scale);
 
     for (auto pt : vlist) {
       obj.addVertex(pt);
@@ -251,84 +235,148 @@ void Window::onDraw(Renderer& renderer) {
     return;
   }
 
-  obj.addVertex({-10, 0, 0});
-  obj.addVertex({10, 0, 0});
+}
 
-  obj.addVertex({0, -10, 0});
-  obj.addVertex({0, 10, 0});
 
-  obj.addVertex({0, 0, 10});
-  obj.addVertex({0, 0, -10});
 
-  auto rotateMat = buildRotateMatrix4x4(-anglex, -angley, -anglez);
-  for (auto& v : obj.localVertexList_) {
-    v = (v * rotateMat);
+bool Window::onCreate() {
+
+  return true;
+}
+
+void Window::needRedraw() {
+  RECT rect;
+  ::GetWindowRect(hWnd_, &rect);
+  ::InvalidateRect(NULL, NULL, FALSE);
+}
+
+//getObjectVetex(Object& obj, unsigned int index,)
+
+void Window::onDraw(Renderer& renderer) {
+  Object objs[4];
+
+  loadObject(objs[0], "cube1.plg", 4.);
+  loadObject(objs[1], "tank2.plg", 0.5);
+  loadObject(objs[2], "tank3.plg", 0.5);
+  loadObject(objs[3], "tower.plg", 0.5);
+
+  RECT rect;
+  ::GetWindowRect(hWnd_, &rect);
+  const int winWidth = rect.right - rect.left + 1;
+  const int winHeight = rect.bottom - rect.top + 1;
+
+  auto startx = wx - 100;
+  for (auto &obj : objs) {
+    auto rotateMat = buildRotateMatrix4x4YXZ<double>(angley, anglex, anglez);
+    for (auto& v : obj.localVertexList_) {
+      v = (v * rotateMat);
+    }
+
+    addToWorld(obj, startx, wy, wz);
+    startx += 80;
   }
 
-  addToWorld(obj, wx, wy, wz);
-
-  int viewWidth = winWidth;
+  const int viewWidth = winWidth;
 //  int viewHeight = winHeight;
 
   CameraUVN camera({cx, cy, cz - 100}, {cx, cy, 1}, 90, 10, 1000, viewWidth, winHeight);
   auto matWorldToCameraMatrix4x4FD = camera.getWorldToCameraMatrix4x4FD();
 
-  Point4FD sphererPt = {wx, wy, wz};
-  sphererPt = sphererPt * matWorldToCameraMatrix4x4FD;
-  if (camera.isSphereOutOfView(sphererPt, 1))
-    return;
-
-  auto transVerit = obj.transVertexList_.begin();
-  while (transVerit != obj.transVertexList_.end()) {
-    const auto pt = *transVerit;
-    *transVerit = pt * matWorldToCameraMatrix4x4FD;
-    ++transVerit;
-  }
-
-  for (auto& itp : obj.polygons_) {
-    const auto u = obj.transVertexList_[itp.at(1)] - obj.transVertexList_[itp.at(0)];
-    const auto v = obj.transVertexList_[itp.at(2)] - obj.transVertexList_[itp.at(0)];
-
-    itp.normal_ = u.crossProduct(v);
-    itp.normal_.normalizeSelf();
-    Vector4FD vp(obj.transVertexList_[itp.at(0)], camera.getPosition());
-    if (vp.dotProduct(itp.normal_) > 0.) {
-      itp.setState(kPolygonStateVisible);
-    }
-  }
-
   AmbientLight ambientLight(Color(255, 255, 255));
-  for (auto& itp : obj.polygons_) {
-    itp.setColor(itp.getColor() * ambientLight.computeIntensity());
-  }
+  InfiniteLight infiniteLight(Color(255, 255, 255), {-1, -1, -1});
+  SpotLight spotLight({0, 0, -50}, {0, 0, 1}, degreeToRadius(100.), degreeToRadius(145.), Color(0, 255, 0));
 
-  auto matCameraToScreen = camera.getCameraToScreenMatrix4x4FD();
-  transVerit = obj.transVertexList_.begin();
-  while (transVerit != obj.transVertexList_.end()) {
-    const auto pt = *transVerit;
-    *transVerit = pt * matCameraToScreen;
-    ++transVerit;
-  }
+  for (auto &obj : objs) {
 
-  for (auto& itp : obj.polygons_) {
-    if (itp.getState() & kPolygonStateVisible) {
+    //Point4FD sphererPt = {wx, wy, wz};
+    //sphererPt = sphererPt * matWorldToCameraMatrix4x4FD;
+    //if (camera.isSphereOutOfView(sphererPt, 1))
+    //  return;
+
+    auto transVerit = obj.transVertexList_.begin();
+    while (transVerit != obj.transVertexList_.end()) {
+      const auto pt = *transVerit;
+      *transVerit = pt * matWorldToCameraMatrix4x4FD;
+      ++transVerit;
+    }
+
+    for (auto& itp : obj.polygons_) {
+      const auto u = obj.transVertexList_[itp.at(1)] - obj.transVertexList_[itp.at(0)];
+      const auto v = obj.transVertexList_[itp.at(2)] - obj.transVertexList_[itp.at(0)];
+
+      itp.normal_ = u.crossProduct(v);
+      itp.normal_.normalizeSelf();
+
+      if (!camera.isBackface(obj.transVertexList_[itp.at(0)], itp.normal_)) {
+        itp.setState(kPolygonStateVisible);
+      }
+    }
+
+    for (auto& itp : obj.polygons_) {
+      int rgb[3] = {0};
+
+      for (int i = 0; i<3; ++i) {
+        {
+          auto intensity = ambientLight.computeIntensity();
+          rgb[i] += itp.getColor().getValue(i) * intensity.getValue(i) / 255;
+        }
+
+        {
+        auto intensity = infiniteLight.computeIntensity(itp.normal_);
+        //rgb[i] += itp.getColor().getValue(i) * intensity.getValue(i) / 255;
+      }
+
+        {
+
+          auto intensity = spotLight.computeIntensity(obj.transVertexList_[itp.at(0)], itp.normal_);
+         // rgb[i] += itp.getColor().getValue(i) * intensity.getValue(i) / 255;
+        }
+      }
+
+      for (int i = 0; i<3; ++i) {
+        if (rgb[i] > 255)
+          rgb[i] = 255;
+      }
+
+      itp.setColor(Color((uint8_t)rgb[2], (uint8_t)rgb[1], (uint8_t)rgb[0]));
+
+    }
+
+    auto matCameraToScreen = camera.getCameraToScreenMatrix4x4FD();
+    transVerit = obj.transVertexList_.begin();
+    while (transVerit != obj.transVertexList_.end()) {
+      const auto pt = *transVerit;
+      *transVerit = pt * matCameraToScreen;
+      ++transVerit;
+    }
+
+    for (auto& itp : obj.polygons_) {
+      if (itp.getState() & kPolygonStateVisible) {
         obj.transPolygons_.push_back(itp);
+      }
+    }
+
+    //std::sort(obj.transPolygons_.begin(), obj.transPolygons_.end(), 
+    //          [&obj](Object::PolygonType& a, Object::PolygonType& b) -> bool {
+    //            double avga = (obj.transVertexList_[a[0]].z_ + obj.transVertexList_[a[1]].z_ + obj.transVertexList_[a[2]].z_) / 3.0;
+    //            double avgb = (obj.transVertexList_[b[0]].z_ + obj.transVertexList_[b[1]].z_ + obj.transVertexList_[b[2]].z_) / 3.0;
+    //            return avga < avgb;
+    //          });
+
+    for (auto itp : obj.transPolygons_) {
+      int id = itp[0];
+      Point2<int> p0 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
+
+      id = itp[1];
+      Point2<int> p1 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
+
+      id = itp[2];
+      Point2<int> p2 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
+      renderer.fillTriangle2D(p0, p1, p2, itp.getColor());
     }
   }
 
 
-
-  for (auto itp : obj.transPolygons_) {
-    int id = itp[0];
-    Point2<int> p0 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
-
-    id = itp[1];
-    Point2<int> p1 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
-
-    id = itp[2];
-    Point2<int> p2 = {(int)obj.transVertexList_[id].x_, (int)obj.transVertexList_[id].y_};
-    renderer.fillTriangle2D(p0, p1, p2, itp.getColor());
-  }
 
 //  const int icd = 0, & const r = 0;
 //  const int *ppp;

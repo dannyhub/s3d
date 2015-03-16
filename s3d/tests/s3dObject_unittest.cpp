@@ -11,7 +11,6 @@ using namespace s3d;
 
 
 BOOST_AUTO_TEST_CASE(s3dObject_unittest) {
-
   {
     Point4<double> pt4 = {1,2,3};
     Matrix4x4FD mat = {1, 0, 0, 0,
@@ -123,11 +122,6 @@ BOOST_AUTO_TEST_CASE(s3dObject_unittest) {
       y = pt.x_ * sin(anglez) + pt.y_ * cos(anglez);
       pt.x_ = x;
       pt.y_ = y;
-
-      //BOOST_CHECK_EQUAL(transpt.x_, pt.x_);
-      //BOOST_CHECK_EQUAL(transpt.y_, pt.y_);
-      //BOOST_CHECK_EQUAL(transpt.z_, pt.z_);
-      //BOOST_CHECK_EQUAL(transpt.w_, 1);
 
       BOOST_CHECK(vector_impl::equalZero(transpt.x_ - pt.x_));
       BOOST_CHECK(vector_impl::equalZero(transpt.y_ - pt.y_));

@@ -454,6 +454,67 @@ inline Matrix<T, M, Cols> matrixSolve(const Matrix<T, M, M>& c, const Matrix<T, 
   return c.inverse() * y;// return Matrix for X
 }
 
+
+template<typename T, unsigned int M>
+Matrix<T, M, M> buildIdentifyMatrix();
+
+
+template<typename T>
+Matrix<T, 2U, 2U> buildIdentifyMatrix2x2() {
+  return Matrix4x4FD {1,0,
+                      0,1};
+}
+
+template<typename T>
+Matrix<T, 3U, 3U> buildIdentifyMatrix3x3() {
+  return Matrix4x4FD {1,0,0,
+                      0,1,0,
+                      0,0,1};
+}
+
+template<typename T>
+Matrix<T, 4U, 4U> buildIdentifyMatrix4x4() {
+  return Matrix4x4FD {1,0,0,0,
+                      0,1,0,0,
+                      0,0,1,0,
+                      0,0,0,1};
+}
+
+
+//angle: degree!
+template<typename T>
+Matrix<T, 4U, 4U> buildRotateMatrix4x4YXZ(double angley, double anglex, double anglez) {
+  assert(std::is_floating_point<T>::value);
+
+  const auto cosx = ::cos(anglex);
+  const auto sinx = ::sin(anglex);
+
+  const auto cosy = ::cos(angley);
+  const auto siny = ::sin(angley);
+
+  const auto cosz = ::cos(anglez);
+  const auto sinz = ::sin(anglez);
+
+  //rotate with: YXZ
+  Matrix<T, 4U, 4U> rotateYMat{cosy,  0, -siny,  0,
+                               0,     1,  0,    0,
+                               siny,  0,  cosy, 0,
+                               0,     0,   0,   1};
+
+  Matrix<T, 4U, 4U> rotateXMat{1, 0,     0,    0,
+                               0, cosx,  sinx, 0,
+                               0, -sinx, cosx, 0,
+                               0, 0,     0,    1};
+
+
+  Matrix<T, 4U, 4U> rotateZMat{cosz, sinz, 0,  0,
+                               -sinz, cosz, 0, 0,
+                               0,     0,    1, 0,
+                               0,     0,    0, 1};
+
+  return rotateYMat * rotateXMat * rotateZMat;
+}
+
 typedef Matrix<float, 1U, 2U> Matrix1x2F;
 typedef Matrix<float, 1U, 3U> Matrix1x3F;
 typedef Matrix<float, 1U, 4U> Matrix1x4F;

@@ -18,6 +18,9 @@ public:
   typedef VertexList<PointType> VertexListType;
   typedef Polygon<3U> PolygonType;
 
+  Object() : id_(0), direction_(0, 0, 0.f) {
+  }
+  
   Object(int id, const std::string& name) : id_(id), name_(name), direction_(0, 0, 1.f){
   }
 
@@ -36,13 +39,8 @@ public:
   }
 
   void addPolygon(const PolygonType& p) {
-    const auto v0 = localVertexList_[p.at(1)] - localVertexList_[p.at(0)];
-    const auto v1 = localVertexList_[p.at(2)] - localVertexList_[p.at(0)];
-
-    PolygonType padded = p;
-    padded.normal_ = v0.crossProduct(v1);
-    //padded.normal_.normalizeSelf();
-    polygons_.push_back(padded);
+    //p.setVertexList();
+    polygons_.push_back(p);
   }
 
   void setWorldPosition(const PointType& pt) {

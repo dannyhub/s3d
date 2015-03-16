@@ -1,4 +1,5 @@
-#include "matrix.h"
+#include "../Matrix.h"
+#include "../Math.h"
 
 #define BOOST_TEST_MODULE unittest
 #include <boost/test/unit_test.hpp>
@@ -7,45 +8,9 @@
 #include <string>
 
 using namespace s3d;
-//const char str[] = "12345";
-//bool mat[5] = {false};
-//int cnum = 0;
-//
-//int foo2(int *ary, int s) {
-//  int sum = 0;
-//  for (int i = 1; i < s; ++i) {
-//    for (int j = 0; i < i; ++j) {
-//      if (ary[j] < ary[i]) {
-//        sum++;
-//      }
-//    }
-//  }
-//  return sum;
-//}
-//
-//void foo(std::string s, int deep) {
-//  if (deep == 5) {
-//    ++cnum;
-//    std::cout << s << std::endl;
-//    return;
-//  }
-//
-//  for (int i = 0; i < 5; ++i) {
-//    if (mat[i]) {
-//      continue;
-//    }
-//    mat[i] = true;
-//    foo(s + str[i], deep+1);
-//    mat[i] = false;
-//  }
-//  
-//}
 
 BOOST_AUTO_TEST_CASE(testMatrix2x2) {
-  
-  //foo("", 0, 0);
-  //std::cout << "all:" << cnum << std::endl;
-
+ 
   {
     Matrix2x2F m1 = {1, 2, 3, 4};
     Matrix2x2F m2 = {11, 12, 13, 14};
@@ -102,21 +67,6 @@ BOOST_AUTO_TEST_CASE(testMatrix2x2) {
       BOOST_CHECK(a == 0.);
       BOOST_CHECK_THROW(m1.inverse(), MatrixInverseException);
     }
-    //Matrix2x2F m3 = m1 + m2;
-    //Matrix2x2F m4 = m1 - m2;
-
-    //Matrix2x2F m5 = m1 * m2;
-    //Matrix2x2F m6 = m1 * 5;
-
-    //float det = m1.det();
-    //Matrix2x2F m7 = m1.inverst();
-    //m1.translate();
-    //m1.rotate();
-    //m1.scale();
-    //m1.indetily();
-    //m1.isIndetily();
-
-
   }
 }
 
@@ -205,5 +155,61 @@ BOOST_AUTO_TEST_CASE(testMatrix4x4) {
       BOOST_CHECK_EQUAL(matrixDet(m1), matrix_impl::computeDet(m1));
       BOOST_CHECK_EQUAL(m1.det(), matrix_impl::computeDet(m1));
     }
+  }
+
+  {
+    auto rmat = buildRotateMatrix4x4YXZ<double>(0.5, 0.2, 0.3);
+    auto pt = buildIdentifyMatrix4x4<double>();
+
+    auto s = pt * rmat;
+    BOOST_CHECK(s == rmat);
+  }
+
+  {//rotate z
+    auto rmat = buildRotateMatrix4x4YXZ<double>(0, 0, degreeToRadius(90.));
+    Matrix<double,1,4> pt = {1,0,0,1};
+    Matrix<double, 1, 4> s = pt * rmat;
+
+    auto d = degreeToRadius(90.);
+    double tx = ::cos(d) - 0 * sin(d);
+    double ty = ::sin(d) + 0 * cos(d);
+
+    BOOST_CHECK(s[0][0] == tx);
+    BOOST_CHECK(equalZero(tx));
+
+    BOOST_CHECK(s[0][1] == ty);
+    BOOST_CHECK(equalZero(ty - 1.));
+  }
+
+  {//rotate y
+    auto rmat = buildRotateMatrix4x4YXZ<double>(degreeToRadius(90.), 0, 0);
+    Matrix<double, 1, 4> pt = {0, 0, 1, 1};
+    Matrix<double, 1, 4> s = pt * rmat;
+
+    auto d = degreeToRadius(90.);
+    double tz = 1 * ::cos(d) - 0 * sin(d);
+    double tx = 1 * ::sin(d) + 0 * cos(d);
+
+    BOOST_CHECK(s[0][0] == tx);
+    BOOST_CHECK(equalZero(tx - 1.));
+
+    BOOST_CHECK(s[0][2] == tz);
+    BOOST_CHECK(equalZero(tz ));
+  }
+
+  {//rotate x
+    auto rmat = buildRotateMatrix4x4YXZ<double>(0, degreeToRadius(90.), 0);
+    Matrix<double, 1, 4> pt = {0, 1, 0, 1};
+    Matrix<double, 1, 4> s = pt * rmat;
+
+    auto d = degreeToRadius(90.);
+    double ty = 1 * ::cos(d) - 0 * sin(d);
+    double tz = 1 * ::sin(d) + 0 * cos(d);
+
+    BOOST_CHECK(s[0][1] == ty);
+    BOOST_CHECK(equalZero(ty));
+
+    BOOST_CHECK(s[0][2] == tz);
+    BOOST_CHECK(equalZero(tz - 1.));
   }
 }

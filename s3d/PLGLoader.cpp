@@ -28,7 +28,6 @@ void PLGLoader::parse(const std::string& filename, std::string& name, VertexList
 
   string linestr;
   while (std::getline(fin, linestr)) {
-//    assert(!linestr.empty());
     if (!linestr.empty()) {
       if (*linestr.begin() == '#')
         continue;
@@ -48,7 +47,6 @@ void PLGLoader::parse(const std::string& filename, std::string& name, VertexList
   int vertsRead = 0;
   linestr.clear();
   while (std::getline(fin, linestr)) {
-    //assert(!linestr.empty());
     if (!linestr.empty()) {
       if (*linestr.begin() == '#')
         continue;
@@ -70,7 +68,6 @@ void PLGLoader::parse(const std::string& filename, std::string& name, VertexList
   int polysRead = 0;
   linestr.clear();
   while (std::getline(fin, linestr)) {
-    //assert(!linestr.empty());
     if (!linestr.empty()) {
       if (*linestr.begin() == '#')
         continue;

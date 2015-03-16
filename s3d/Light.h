@@ -29,17 +29,18 @@ private:
 
 class InfiniteLight {
 public:
-  InfiniteLight(const Color& color, const Vector4FD& dir) : color_(color), dir_(dir) {}
+  InfiniteLight(const Color& color, const Vector4FD& dir) : color_(color), dir_(dir) {
+    dir_.normalizeSelf();
+  }
   ~InfiniteLight() {}
 
   virtual Color computeIntensity(const Vector4FD& planeN) {
     assert(planeN.isNormalize());
     assert(dir_.isNormalize());
 
-    auto cosv = planeN.dotProduct(dir_);
+    auto cosv = planeN.dotProduct(dir_*-1);
     if (cosv <= 0.)
       return Color(0);
-
 
     return color_ * cosv;
   }
@@ -91,17 +92,19 @@ public:
       outerAngle_(outerAngle),
       color_(color),
       kc_(kc), kl_(kl), kq_(kq), pf_(pf) {
+
+    dir_.normalizeSelf();
   }
 
   ~SpotLight() {}
 
   virtual Color computeIntensity(const Point4FD& destPt, const Vector4FD& planeN) {
     assert(planeN.isNormalize());
-    const auto df = planeN.dotProduct(dir_);
+    const auto df = planeN.dotProduct(dir_*-1);
     if (df <= 0.)
       return Color(0);
 
-    Vector4FD lightDir(destPt, pos_);
+    Vector4FD lightDir(pos_, destPt);
     const auto ldist = lightDir.length();
     lightDir.normalizeSelf();
 

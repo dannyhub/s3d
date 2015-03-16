@@ -1,4 +1,4 @@
-#include "../Vector.h"
+#include "../Math.h"
 
 
 #include <boost/test/unit_test.hpp>
@@ -10,33 +10,8 @@
 using namespace std;
 using namespace s3d;
 
-struct tetsxx {
-  string xx = "aaa";
-  int a = 333;
-  double b = 0.5;
-//  vector<int> dsfddd{1,3,4};
-};
-
-void foo(int&) {
-}
-
-void foo(int) {
-}
 
 BOOST_AUTO_TEST_CASE(testVector2) {
-  //tetsxx testxxxx = {string("bbb"), 333, 0.1};
-  const int aadxd =33;
-  const int &xsfa = aadxd;
-  int xaaa;
-  int &a = xaaa = 111;
-  int &sdd = a;
-  sdd = 1132;
-  //foo(sdd);
-  const int* pp =  &a;
-  const int*  &sdff = pp;
-  //int a[sdff] = {0};
-  const char* xxss = typeid(sdff).name();
-
   Vector2F v1 = {1,2};
   Vector2F v2(3. , 4.);
   Vector2F v3(4., 6.);
@@ -90,12 +65,6 @@ BOOST_AUTO_TEST_CASE(testVector2) {
     Vector2F v2 = {200, 0};
     auto angle = v1.angle(v2) *  180.f / 3.1415927f;
     BOOST_CHECK_EQUAL(vector_impl::equalZero(angle - 45.f), true);
-   // printf("angle %f\n", angle);
-
-    //float dd = 0.2f;
-   // void* xx = &dd;
-
-    //printf("0.2 %X\n", *(int*)xx);
   }
 
   {
@@ -105,9 +74,27 @@ BOOST_AUTO_TEST_CASE(testVector2) {
     //BOOST_CHECK_EQUAL(v, v1.length() * ::cos(45.f * 3.1415927f / 180.f));
   }
 
-  //const int i = 42;
-  //auto j= i;
-  //const auto &k = i;
-  //auto *p = &i;
-  //const auto j2 = i, &k2 = i;
+  {
+    Vector3F pt0{1,2,4};
+    Vector3F pt1{4, 5, 6};
+    Vector4FD dir(pt0, pt1);
+    BOOST_CHECK_EQUAL(dir.x_, 3.);
+    BOOST_CHECK_EQUAL(dir.y_, 3.);
+    BOOST_CHECK_EQUAL(dir.z_, 2.);
+    BOOST_CHECK_EQUAL(dir.w_, 1.);
+  }
+
+  {
+    Vector4FD v0{1,0,0};
+    Vector4FD v1{0,1,0};
+
+    Vector4FD n = v0.crossProduct(v1);
+    BOOST_CHECK(equalZero(n.x_));
+    BOOST_CHECK(equalZero(n.y_));
+    BOOST_CHECK(equalZero(n.z_ - 1.));
+    BOOST_CHECK_EQUAL(n.w_, 1.);
+
+    BOOST_CHECK(n.crossProduct(v0) == v1 );
+    BOOST_CHECK(n.crossProduct(v1) == v0 * -1);
+  }
 }

@@ -3,9 +3,6 @@
 #include <cassert>
 #include <algorithm>
 
-#undef max
-#undef min
-
 namespace s3d
 {
 const int kBludeIndex = 0;
@@ -45,13 +42,29 @@ public:
     return color_.alpha_;
   }
 
-  uint8_t getValue(int index) const{
-    assert(index >= 0 && index < 4);
+  void setBlue(uint8_t v) {
+    color_.blue_ = v;
+  }
+
+  void setRed(uint8_t v) {
+    color_.red_ = v;
+  }
+
+  void setGreen(uint8_t v) {
+    color_.green_ = v;
+  }
+
+  void setAlpha(uint8_t v) {
+    color_.alpha_ = v;
+  }
+
+  uint8_t getValue(unsigned int index) {
+    assert(index < 4);
     return argbArray_[index];
   }
 
-  void setValue(int index, uint8_t v) {
-    assert(index >= 0 && index < 4);
+  void setValue(unsigned int index, uint8_t v) {
+    assert(index < 4);
     argbArray_[index] = v;
   }
 
@@ -59,24 +72,24 @@ public:
   Color operator* (T v) {
     Color ct;
     ct.color_.blue_ = static_cast<decltype(color_.blue_)>(std::max(color_.blue_ * v + 0.5, 255.0));
-   // ct.color_.green_ = static_cast<decltype(color_.green_)>(std::max(color_.green_ * v + 0.5, 255.));
-   // ct.color_.red_ = static_cast<decltype(color_.red_)>(std::max(color_.red_ * v + 0.5, 255.));
+    ct.color_.green_ = static_cast<decltype(color_.green_)>(std::max(color_.green_ * v + 0.5, 255.));
+    ct.color_.red_ = static_cast<decltype(color_.red_)>(std::max(color_.red_ * v + 0.5, 255.));
     return ct;
   }
 
-  //template<typename T>
-  //Color& operator*=(T v) {
-  //  color_.blue_ = static_cast<decltype(color_.blue_)>(std::max(color_.blue_ * v + 0.5, 255.));
-  //  color_.green_ = static_cast<decltype(color_.green_)>(std::max(color_.green_ * v + 0.5, 255.));
-  //  color_.red_ = static_cast<decltype(color_.red_)>(std::max(color_.red_ * v + 0.5, 255.));
-  //  return *this;
-  //}
+  template<typename T>
+  Color& operator*=(T v) {
+    color_.blue_ = static_cast<decltype(color_.blue_)>(std::max(color_.blue_ * v + 0.5, 255.));
+    color_.green_ = static_cast<decltype(color_.green_)>(std::max(color_.green_ * v + 0.5, 255.));
+    color_.red_ = static_cast<decltype(color_.red_)>(std::max(color_.red_ * v + 0.5, 255.));
+    return *this;
+  }
 
   //Color operator+ (const Color& cs) {
   //  Color cd;
-  //  cd.color_.blue_ = std::max(1,2);
-  //  //cd.color_.green_ = static_cast<decltype(color_.green_)>(std::max((int)cs.color_.green_ + color_.green_, 255));
-  //  //cd.color_.red_ = static_cast<decltype(color_.red_)>(std::max((int)cs.color_.red_ + color_.red_, 255));
+  //  cd.color_.blue_ = static_cast<decltype(color_.blue_)>(std::max(cs.color_.blue_ + color_.blue_, 255));
+  //  cd.color_.green_ = static_cast<decltype(color_.green_)>(std::max(cs.color_.green_ + color_.green_, 255));
+  //  cd.color_.red_ = static_cast<decltype(color_.red_)>(std::max(cs.color_.red_ + color_.red_, 255));
   //  return cd;
   //}
 

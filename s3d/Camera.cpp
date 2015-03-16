@@ -57,12 +57,12 @@ void CameraUVN::buildUVNVector() {
 }
 
 Matrix4x4FD CameraUVN::buildWorldToCameraMatrix4x4FD() {
-  Matrix4x4FD rmat = {u_.x_, v_.x_, n_.x_, 0,
+  Matrix4x4FD rmat   {u_.x_, v_.x_, n_.x_, 0,
                       u_.y_, v_.y_, n_.y_, 0,
                       u_.z_, v_.z_, n_.z_, 0,
                       0,0,0,1};
 
-  Matrix4x4FD tmat = {1, 0, 0, 0,
+  Matrix4x4FD tmat   {1, 0, 0, 0,
                       0, 1, 0, 0,
                       0, 0, 1, 0,
                       -position_.x_, -position_.y_, -position_.z_, 1};
@@ -79,7 +79,7 @@ Matrix4x4FD CameraUVN::buildCameraToPerspectiveMatrix4x4FD() {
    */
   const auto vd = viewDistance_;
   const auto ar = aspectRatio_;
-  Matrix4x4FD mat = {vd, 0,       0, 0,
+  Matrix4x4FD mat   {vd, 0,       0, 0,
                       0, vd * ar, 0, 0,
                       0, 0,       1, 1,
                       0, 0,       0, 0};
@@ -108,7 +108,7 @@ Matrix4x4FD CameraUVN::buildPerspectiveToScreenMatrix4x4FD() {
   const auto xalpha = screenWidth_ * 0.5 - 0.5;
   const auto ybeta = screenHeight_ * 0.5 - 0.5;
     
-  Matrix4x4FD mat = {xalpha, 0,     0,  0,
+  Matrix4x4FD mat   {xalpha, 0,     0,  0,
                       0,     -ybeta, 0,  0,
                       0,      0,     1,  0,
                       xalpha, ybeta, 0,  1};
@@ -120,9 +120,14 @@ Matrix4x4FD CameraUVN::buildWorldToSreenMatrix4x4FD() {
   return matWorldToCamera_ * matCameraToPerspective_ * matPerspectiveToSreen_;
 }
 
-bool CameraUVN::isBackFacePlane(const Vector4FD& n) {
-  Vector4FD vp = position_ - target_;
-  return vp.dotProduct(n) < 0.;
+bool CameraUVN::isBackface(const Point4FD& pt, const Vector4FD& normal) {
+  Vector4FD vp(pt, getPosition());
+
+  if (vp.dotProduct(normal) > 0.) {
+    return false;
+  } else {
+    return true;
+  }
 }
 
 bool CameraUVN::isSphereOutOfView(const Point4FD& position, double radius) {
