@@ -2,6 +2,7 @@
 #include "../math/Math.h"
 #include "Polygon.h"
 #include "VertexList.h"
+#include "Vertex.h"
 
 #include <string>
 #include <vector>
@@ -15,7 +16,8 @@ public:
   typedef Point4<double> PointType;
   typedef Point4<double> VectorType;
 
-  typedef VertexList<PointType> VertexListType;
+  typedef Vertex VertexType;
+  typedef VertexList<VertexType> VertexListType;
   typedef Polygon<3U> PolygonType;
 
   Object() : id_(0), direction_(0, 0, 0.f) {
@@ -25,16 +27,9 @@ public:
   }
 
   ~Object() {
-  }
-  
+  }     
 
-/*  void addVertexList(const std::initializer_list<PointType>& ilist) {
-    std::for_each(ilist.begin(), ilist.end(), [&] -> (const PointType& pt) {
-      this->addVertex(pt);
-    });
-  }    */        
-
-  void addVertex(const PointType& pt) {
+  void addVertex(const VertexType& pt) {
     localVertexList_.push_back(pt);
   }
 
@@ -49,6 +44,7 @@ public:
 
   VertexListType localVertexList_;
   VertexListType transVertexList_;
+
   std::vector<PolygonType> polygons_;
   std::vector<PolygonType> transPolygons_;
 

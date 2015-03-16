@@ -42,6 +42,7 @@ public:
   }
 
   iterator begin() {
+    assert(!vertices.empty());
     return vertices.begin();
   }
 
@@ -50,6 +51,7 @@ public:
   }
 
   const_iterator begin() const {
+    assert(!vertices.empty());
     return vertices.begin();
   }
 

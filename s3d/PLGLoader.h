@@ -10,7 +10,7 @@ public:
   PLGLoader();
   ~PLGLoader();
 
-  void parse(const std::string& filename, std::string& name, VertexList<Point4<double>>& vlist, std::vector<Polygon<3>>& polys, float scale);
+  void parse(const std::string& filename, std::string& name, std::vector<Point4<float>>& vlist, std::vector<Polygon<3>>& polys, float scale);
 
 };
 

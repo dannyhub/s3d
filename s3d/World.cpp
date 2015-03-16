@@ -18,8 +18,11 @@ void World::addToWorld(ObjectPtr obj, const Point3FD& pos) {
 
     obj->setWorldPosition({pos.x_, pos.y_, pos.z_});\
     for (auto v : obj->localVertexList_) {
-      worldVertices.push_back(v * translateMat);
+      v.transform(translateMat);
+      worldVertices.push_back(v);
     }
+
+    objects_.push_back(obj);
 }
 
 }// namespace s3d

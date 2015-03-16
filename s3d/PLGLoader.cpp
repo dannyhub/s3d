@@ -16,7 +16,7 @@ PLGLoader::PLGLoader() {
 PLGLoader::~PLGLoader() {
 }
 
-void PLGLoader::parse(const std::string& filename, std::string& name, VertexList<Point4<double>>& vlist, std::vector<Polygon<3>>& polys, float scale) {
+void PLGLoader::parse(const std::string& filename, std::string& name, std::vector<Point4<float>>& vlist, std::vector<Polygon<3>>& polys, float scale) {
   fstream fin;
   fin.open(filename.c_str(), ios_base::in);
   if (!fin) 
@@ -54,7 +54,7 @@ void PLGLoader::parse(const std::string& filename, std::string& name, VertexList
       int v1,v2,v3;
 
       sscanf_s(linestr.c_str(), "%d %d %d", &v1, &v2, &v3);
-      vlist.push_back({(double)v1 * scale, (double)v2* scale, (double)v3* scale});
+      vlist.push_back({(float)v1 * scale, (float)v2* scale, (float)v3* scale});
       if (++vertsRead == num_verts)
         break;
     }
@@ -83,7 +83,7 @@ void PLGLoader::parse(const std::string& filename, std::string& name, VertexList
       else
         desc = atoi(strDesc);
 
-      Polygon<3> poly = {v1, v2, v3};
+      Polygon<3> poly = {v3, v1, v2};
 
 
       const int PLX_COLOR_MODE_RGB_FLAG = 0x8000;

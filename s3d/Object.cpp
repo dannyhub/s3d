@@ -5,21 +5,21 @@ namespace s3d
 {
 
 
-  void addToWorld(Object& obj, double x, double y, double z) {
-    Matrix4x4FD translateMat = {1, 0, 0, 0,
-                                0, 1, 0, 0,
-                                0, 0, 1, 0,
-                                x, y, z, 1};
+  //void addToWorld(Object& obj, double x, double y, double z) {
+  //  Matrix4x4FD translateMat = {1, 0, 0, 0,
+  //                              0, 1, 0, 0,
+  //                              0, 0, 1, 0,
+  //                              x, y, z, 1};
 
-    obj.setWorldPosition({x, y, z});
-    obj.transVertexList_.clear();
-    auto it = obj.localVertexList_.begin();
-    while (it != obj.localVertexList_.end()) {
-      const auto pt4 = *it;
-      obj.transVertexList_.push_back(pt4 * translateMat);
-      ++it;
-    }
-  }
+  //  obj.setWorldPosition({x, y, z});
+  //  obj.transVertexList_.clear();
+  //  auto it = obj.localVertexList_.begin();
+  //  while (it != obj.localVertexList_.end()) {
+  //    const auto pt4 = *it;
+  //    obj.transVertexList_.push_back(pt4 * translateMat);
+  //    ++it;
+  //  }
+  //}
 
   void backFaceRemove(Object& obj, const Point4FD& /*viewLine*/, double /*farZ*/) {
     for (auto itp : obj.polygons_) {
@@ -116,7 +116,7 @@ namespace s3d
     const auto mat = translateMat * rotateYMat  * rotateXMat * rotateZMat;
     auto transVerit = obj.transVertexList_.begin();
     while (transVerit != obj.transVertexList_.end()) {
-      *transVerit = *transVerit * mat;
+      //*transVerit = *transVerit * mat;
       ++transVerit;
     }
   }
@@ -152,7 +152,7 @@ namespace s3d
     auto transVerit = obj.transVertexList_.begin();
     while (transVerit != obj.transVertexList_.end()) {
       const auto pt = *transVerit;
-      *transVerit = pt * mat;
+      //*transVerit = pt * mat;
       ++transVerit;
     }
   }
@@ -174,7 +174,7 @@ namespace s3d
     auto transVerit = obj.transVertexList_.begin();
     while (transVerit != obj.transVertexList_.end()) {
       const auto pt = *transVerit;
-      *transVerit = pt * mat;
+      //*transVerit = pt * mat;
       ++transVerit;
     }
   }

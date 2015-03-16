@@ -115,9 +115,26 @@ public:
     attr_ = PolygonAttr((unsigned)attr_ | s);
   }
 
-  Vector4FD normal_;
+  template <typename VertexList>
+  void computeNormal(VertexList& vl, bool isNormalize = true) {
+  //FIXEME
+    Vector4FD u((Point3F)vl[vertices[0]], (Point3F)vl[vertices[1]]);
+    Vector4FD v((Point3F)vl[vertices[1]], (Point3F)vl[vertices[2]]);
+
+    normal_ = u.crossProduct(v);
+
+    if (isNormalize)
+      normal_.normalizeSelf();
+  }
+
   
+  Vector4FD getNormal() const {
+    return normal_;
+  }
+
 private:
+  Vector4FD normal_;
+
   PolygonState state_;
   PolygonAttr attr_;
 
@@ -126,5 +143,7 @@ private:
 
   int id;
 };
+
+typedef Polygon<3U> Polygon3;
 
 }// s3d
