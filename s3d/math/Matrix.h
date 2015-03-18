@@ -515,6 +515,26 @@ Matrix<T, 4U, 4U> buildRotateMatrix4x4YXZ(double angley, double anglex, double a
   return rotateYMat * rotateXMat * rotateZMat;
 }
 
+template<typename T>
+Matrix<T, 4U, 4U> buildTranslateMatrix4x4(T x, T y, T z) {
+  Matrix<T, 4U, 4U> translateMat = {1, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    x, y, z, 1};
+
+    return translateMat;
+}
+
+template<typename T>
+Matrix<T, 4U, 4U> buildScaleMatrix4x4(T sx, T sy, T sz) {
+  Matrix<T, 4U, 4U> scaleMat = {sx, 0,  0,  0,
+                                    0,  sy, 0,  0,
+                                    0,  0,  sz, 0,
+                                    0,  0,  0,  1};
+
+  return scaleMat;
+}
+
 typedef Matrix<float, 1U, 2U> Matrix1x2F;
 typedef Matrix<float, 1U, 3U> Matrix1x3F;
 typedef Matrix<float, 1U, 4U> Matrix1x4F;

@@ -12,8 +12,15 @@ public:
   Vertex() {}
   ~Vertex() {}
 
-  explicit Vertex(const PointType& pt) : point_(pt) {}
+  Vertex(const PointType& pt) : point_(pt) {}
   Vertex(const Point3F& pt, const Color& c) : point_(pt), color_(c){}
+
+  template<typename PT>
+  Vertex(const PT& pt) {
+    point_.x_ = pt.x_;
+    point_.y_ = pt.y_;
+    point_.z_ = pt.z_;
+  }
 
   PointType getPoint() const {
     return point_;
@@ -27,15 +34,8 @@ public:
     return color_;
   }
 
-  operator PointType() {
-    return point_;
-  }
-
-  template<typename MATRIX4x4>
-  void transform(const MATRIX4x4& mat) {
-    //FIXME use the Point3F * MATRIX4x4
-    auto pt = Point4FD(point_) * mat;
-    point_ = Point3F(static_cast<float>(pt.x_), static_cast<float>(pt.y_), static_cast<float>(pt.z_));
+  void setPoint(const PointType& p) {
+    point_ = p;
   }
 
 private:
@@ -44,5 +44,14 @@ private:
   Color color_;
    
 };
+
+template<typename T>
+Vertex operator * (const Vertex& v, const Matrix<T, 4U, 4U>& mat) {
+  Vertex tr(v);
+  //FIXME use the Point3F * MATRIX4x4
+  auto pt = Point4FD(v.getPoint()) * mat;
+  tr.setPoint(Point3F(static_cast<float>(pt.x_), static_cast<float>(pt.y_), static_cast<float>(pt.z_)));
+  return tr;
+}
 
 } //s3d

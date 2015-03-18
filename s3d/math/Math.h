@@ -14,9 +14,9 @@
 namespace s3d
 {
 
-template<typename T>
-Point4<T> operator * (const Point4<T>& pt4, const Matrix<T, 4U, 4U>& m1) {
-  Point4<T> ptRes;
+template<typename T1, typename T2>
+Point4<T1> operator * (const Point4<T1>& pt4, const Matrix<T2, 4U, 4U>& m1) {
+  Point4<T1> ptRes;
   ptRes.x_ = m1[0][0] * pt4.x_ + m1[1][0] * pt4.y_ + m1[2][0] * pt4.z_ + m1[3][0] * pt4.w_;
   ptRes.y_ = m1[0][1] * pt4.x_ + m1[1][1] * pt4.y_ + m1[2][1] * pt4.z_ + m1[3][1] * pt4.w_;
   ptRes.z_ = m1[0][2] * pt4.x_ + m1[1][2] * pt4.y_ + m1[2][2] * pt4.z_ + m1[3][2] * pt4.w_;
@@ -27,7 +27,7 @@ Point4<T> operator * (const Point4<T>& pt4, const Matrix<T, 4U, 4U>& m1) {
     ptRes.x_ /= ptRes.w_;
     ptRes.y_ /= ptRes.w_;
     ptRes.z_ /= ptRes.w_;
-    ptRes.w_ = 1.f;
+    ptRes.w_ = T1(1);
   }
 
   return ptRes;

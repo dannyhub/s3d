@@ -115,6 +115,13 @@ public:
     attr_ = PolygonAttr((unsigned)attr_ | s);
   }
 
+  //template<typename VertexList, typename MATRIX>
+  //void transform(VertexList& vl, const MATRIX& mat) {
+  //  for (auto& ptIndex : *this) {
+  //    vl[ptIndex] = vl[ptIndex] * mat;
+  //  }
+  //}
+
   template <typename VertexList>
   void computeNormal(VertexList& vl, bool isNormalize = true) {
   //FIXEME

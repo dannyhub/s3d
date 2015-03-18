@@ -252,7 +252,7 @@ void Renderer::fillTriangle2D(const Point2<int>& p0, const Point2<int>& p1, cons
   }
 }
 
-void Renderer::fillFlatTopTriangle2D(const Point2<double>& p0, const Point2<double>& p1, const Point2<double>& p2, const Color& c) {
+void Renderer::fillFlatTopTriangle2D(const Point2<double>& p0, const Point2<double>& p1, const Point2<double>& p2, const Color& ) {
   auto dp0 = p0, dp1 = p1, dp2 = p2;
 
   if (!equal(dp0.y_, dp1.y_)) {
@@ -285,7 +285,7 @@ void Renderer::fillFlatTopTriangle2D(const Point2<double>& p0, const Point2<doub
   }
 }
 
-void Renderer::fillFlatBottomTriangle2D(const Point2<double>& p0, const Point2<double>& p1, const Point2<double>& p2, const Color& c) {
+void Renderer::fillFlatBottomTriangle2D(const Point2<double>& p0, const Point2<double>& p1, const Point2<double>& p2, const Color& ) {
   auto dp0 = p0, dp1 = p1, dp2 = p2;
 
   if (!equal(dp0.y_, dp1.y_)) {
@@ -305,7 +305,7 @@ void Renderer::fillFlatBottomTriangle2D(const Point2<double>& p0, const Point2<d
   const double m0 = -double(dp2.x_ - dp0.x_) / double(dp2.y_ - dp0.y_);
   const double m1 = -double(dp2.x_ - dp1.x_) / double(dp2.y_ - dp1.y_);
   const auto steps = dp0.y_ - dp2.y_;
-  int y = dp0.y_ - 1;
+  auto y = dp0.y_ - 1.;
   double x0 = dp0.x_ + m0;
   double x1 = dp1.x_ + m1;
 

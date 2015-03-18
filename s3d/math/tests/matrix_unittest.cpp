@@ -2,12 +2,20 @@
 #include "../Math.h"
 
 #define BOOST_TEST_MODULE unittest
+//#define BOOST_TEST_ALTERNATIVE_INIT_API
+//#define BOOST_TEST_ALTERNATIVE_INIT_API
+//#define BOOST_TEST_NO_LIB
+//#define BOOST_TEST_NO_MAIN
+//#define BOOST_TEST_ALTERNATIVE_INIT_API
 #include <boost/test/unit_test.hpp>
+#include <boost/bind.hpp>
 
 #include <iostream>
 #include <string>
 
 using namespace s3d;
+using namespace boost::unit_test;
+
 
 BOOST_AUTO_TEST_CASE(testMatrix2x2) {
  
@@ -115,8 +123,6 @@ BOOST_AUTO_TEST_CASE(testMatrix3x3) {
     BOOST_CHECK_EQUAL(matrixDet(m4), 8);
     BOOST_CHECK_EQUAL(matrixDet(m4), matrix_impl::computeDet(m4));
     BOOST_CHECK_EQUAL(matrixDet(m3), matrix_impl::computeDet(m3));
-
-
 
     {
       auto m = matrixInverse(m4);

@@ -16,11 +16,12 @@ void World::addToWorld(ObjectPtr obj, const Point3FD& pos) {
                                 0, 0, 1, 0,
                                 pos.x_, pos.y_, pos.z_, 1};
 
-    obj->setWorldPosition({pos.x_, pos.y_, pos.z_});\
-    for (auto v : obj->localVertexList_) {
-      v.transform(translateMat);
-      worldVertices.push_back(v);
-    }
+    //obj->setWorldPosition({pos.x_, pos.y_, pos.z_});
+    //obj->transVertexList_.clear();
+    //for (auto &vertex : obj->localVertexList_) {
+    //  
+    //  obj->transVertexList_.push_back(vertex * translateMat);
+    //}
 
     objects_.push_back(obj);
 }

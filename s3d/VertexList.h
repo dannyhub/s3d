@@ -4,6 +4,7 @@
 #include "math/Matrix.h"
 
 #include <vector>
+#include <algorithm>
 
 namespace s3d
 {
@@ -20,7 +21,7 @@ public:
   }
 
   VertexList(const std::initializer_list<value_type>& ilist) {
-    std::copy(ilist.begin(), ilist.end(), std::back_insert(vertices));
+    std::copy(ilist.begin(), ilist.end(), std::back_inserter(vertices));
   }
 
   void push_back(const T& pt) {
@@ -31,12 +32,22 @@ public:
     vertices.clear();
   }
 
-  T operator[] (size_type index) {
+  T operator[] (size_type index) const {
     assert(index < vertices.size());
     return vertices[index];
   }
 
-  T at (size_type index) {
+  T& operator[] (size_type index)  {
+    assert(index < vertices.size());
+    return vertices[index];
+  }
+
+  T at(size_type index) const  {
+    assert(index < vertices.size());
+    return vertices.at(index);
+  }
+
+  T& at(size_type index) {
     assert(index < vertices.size());
     return vertices.at(index);
   }

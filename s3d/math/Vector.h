@@ -43,6 +43,22 @@ public:
   Vector2(const Point2& p0, const Point2& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_) {
   }
 
+  T getX() const {
+    return x_;
+  }
+
+  T getY() const{
+    return y_;
+  }
+
+  void setX(T x) {
+    x_ = x;
+  }
+
+  void setY(T y){
+    y_ = y;
+  }
+
   T length() const;
   Vector2 normalize() const;
   void normalizeSelf() {
@@ -93,6 +109,30 @@ public:
 
   template<typename POINT>
   Vector3(const POINT& p0, const POINT& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_), z_(p1.z_ - p0.z_) {
+  }
+
+  T getX() const{
+    return x_;
+  }
+
+  T getY() const{
+    return y_;
+  }
+
+  T getZ() const{
+    return z_;
+  }
+
+  void setX(T x) {
+    x_ = x;
+  }
+
+  void setZ(T z) {
+    z_ = z;
+  }
+
+  void setY(T y) {
+    y_ = y;
   }
 
   T length() const;
@@ -162,6 +202,30 @@ public:
   
   template<typename POINT0, typename POINT1>
   Vector4(const POINT0& p0, const POINT1& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_), z_(p1.z_ - p0.z_), w_(T(1)) {
+  }
+
+  T getX() const{
+    return x_;
+  }
+
+  T getY() const{
+    return y_;
+  }
+
+  T getZ() const{
+    return z_;
+  }
+
+  void setX(T x) {
+    x_ = x;
+  }
+
+  void setZ(T z) {
+    z_ = z;
+  }
+
+  void setY(T y) {
+    y_ = y;
   }
 
   T length() const;

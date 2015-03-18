@@ -8,9 +8,115 @@
 #include <string>
 
 using namespace s3d;
+using namespace std;
 
+BOOST_AUTO_TEST_CASE(s3dObject_unittest1) {
+  auto pt  = Vertex::PointType{1, 2, 3};
+  Vertex vertex(pt);
+  BOOST_CHECK(pt == vertex.getPoint());
 
-BOOST_AUTO_TEST_CASE(s3dObject_unittest) {
+  auto pt2 = Vertex::PointType{11, 22, 33};
+  vertex.setPoint(pt2);
+  BOOST_CHECK(pt2 == vertex.getPoint());
+
+  Matrix<float, 4U, 4U> mat {3,0,0,0,
+                             0,3,0,0,
+                             0,0,3,0,
+                             0,0,0,1};
+
+  Vertex vertex3(pt);
+  Vertex vertex4 = vertex3 * mat;
+  BOOST_CHECK(vertex4.getPoint() == pt * 3);
+
+  vertex3 = vertex3 * mat;
+  BOOST_CHECK(vertex3.getPoint() == pt * 3);
+
+  Polygon3 poly = {0,1,2};
+  Polygon3::value_type i = 0;
+  for (auto v : poly) {
+    BOOST_CHECK(v == i++);
+  }
+
+  Polygon3 poly2{2, 1, 0};
+  i = 2;
+  for (auto v : poly2) {
+    BOOST_CHECK(i < 3 && i >=0);
+    BOOST_CHECK(v == i--);
+  }
+
+  BOOST_CHECK(poly2.size() == 3);
+  BOOST_CHECK(poly2[0] == 2);
+  BOOST_CHECK(poly2[1] == 1);
+  BOOST_CHECK(poly2[2] == 0);
+  BOOST_CHECK(poly2.at(0) == 2);
+  BOOST_CHECK(poly2.at(1) == 1);
+  BOOST_CHECK(poly2.at(2) == 0);
+
+  BOOST_CHECK_THROW(poly2.at(3), std::out_of_range);
+  BOOST_CHECK_THROW(poly2.at((size_t)-1), std::out_of_range);
+  BOOST_CHECK_THROW(poly2.at(4), std::out_of_range);
+
+  Polygon3 poly3(poly2);
+  i = 2;
+  for (auto v : poly3) {
+    BOOST_CHECK(i < 3 && i >= 0);
+    BOOST_CHECK(v == i--);
+  }
+
+  Polygon3 poly4;
+  poly4 = poly3;
+  i = 2;
+  for (auto v : poly4) {
+    BOOST_CHECK(i < 3 && i >= 0);
+    BOOST_CHECK(v == i--);
+  }
+  BOOST_CHECK(poly4.size() == 3);
+  BOOST_CHECK(poly4[0] == 2);
+  BOOST_CHECK(poly4[1] == 1);
+  BOOST_CHECK(poly4[2] == 0);
+  BOOST_CHECK(poly4.at(0) == 2);
+  BOOST_CHECK(poly4.at(1) == 1);
+  BOOST_CHECK(poly4.at(2) == 0);
+
+  BOOST_CHECK_THROW(poly4.at(3), std::out_of_range);
+  BOOST_CHECK_THROW(poly4.at((size_t)-1), std::out_of_range);
+  BOOST_CHECK_THROW(poly4.at(4), std::out_of_range);
+
+  Object obj;
+  Object::VertexType v1[3] = {pt, pt * 2, pt * 3};
+  
+  Object::PolygonType polys[3] = {poly, poly2, poly2};
+  auto sdfsdf = polys[0];
+  //obj.addPolygon({polys[0], polys[0], polys[0]});
+  obj.addPolygon(polys[0]);
+  obj.addPolygon(polys[1]);
+  obj.addPolygon(polys[2]);
+
+  BOOST_CHECK(obj.size() == 3);
+  i = 0;
+  
+  for (auto &poly : obj) {
+    int j = 0;
+    for (auto v : poly) {
+      auto p = polys[i];
+      BOOST_CHECK_EQUAL(p[j++], v);
+    }
+    ++i;
+  }
+
+  VertexList<Point2FD> vl{Point2FD(1, 2), Point2FD(3, 4)};
+  BOOST_CHECK(obj.size() == 2);
+  vl.push_back(Point2FD(5, 6));
+
+  BOOST_CHECK(obj.size() == 3);
+
+}
+
+BOOST_AUTO_TEST_CASE(s3dObject_unittest2) {
+
+}
+
+BOOST_AUTO_TEST_CASE(s3dObject_unittest3) {
   {
     Point4<double> pt4 = {1,2,3};
     Matrix4x4FD mat = {1, 0, 0, 0,

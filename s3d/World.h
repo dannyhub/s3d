@@ -12,16 +12,14 @@ namespace s3d
 
 class World {
 public:
-  typedef Point4<double> PointType;
+  typedef std::vector<Object::PolygonType> PolygonListType;
   typedef Object::VertexListType VertexListType;
   typedef Point4<double> VectorType;
+  typedef Point4<double> PointType;
 
   typedef std::vector<ObjectPtr>::iterator iterator;
   typedef std::vector<ObjectPtr>::const_iterator const_iterator;
   typedef std::vector<ObjectPtr>::size_type size_type;
-
-  typedef VertexListType::iterator vertexlist_iterator;
-  typedef VertexListType::const_iterator vertexlist_const_iterator;
 
   World();
   ~World();
@@ -48,33 +46,18 @@ public:
     return objects_.size();
   }
 
-  vertexlist_iterator vertexlist_begin() {
-    return worldVertices.begin();
-  }
-
-  vertexlist_iterator vertexlist_end() {
-    return worldVertices.end();
-  }
-
-  vertexlist_const_iterator vertexlist_begin() const {
-    return worldVertices.begin();
-  }
-
-  vertexlist_const_iterator vertexlist_end() const {
-    return worldVertices.end();
-  }
-
-  size_type vertexlist_size() const {
-    return worldVertices.size();
-  }
-
-  VertexListType& getworldVertices() {
+  VertexListType& getWorldVertices() {
     return worldVertices;
+  }
+
+  PolygonListType& getPolygonList() {
+    return polys_;
   }
 
 private:
   VertexListType worldVertices;
   std::vector<ObjectPtr> objects_;
+  PolygonListType polys_;
 };
 
 }// namespace s3d
