@@ -77,10 +77,10 @@ private:
 template<typename T>
 void Renderer::drawLine2D_Horizontal(const Point2<T>& p0, const Point2<T>& p1, const Color& c) {
   assert(p0.y_ == p1.y_);
-  const int steps = static_cast<int>(std::abs(p1.x_ - p0.x_));
+  const int steps = static_cast<int>(std::abs(std::ceil(p1.x_ - p0.x_)));
   const auto xd = p1.x_ < p0.x_ ? p1.x_ : p0.x_;
 
-  int  startX = static_cast<int>(xd);
+  int  startX = static_cast<int>(std::ceil(xd));
   const int y = static_cast<int>(p0.y_);
   for (int i = 0; i < steps; ++i) {
     buffer_.setPixel(startX++, y, c.getABGRValue());
@@ -105,17 +105,16 @@ void Renderer::fillFlatTopTriangle2D(const Point2<T>& p0, const Point2<T>& p1, c
   assert(!equal(dp2.y_, dp0.y_));
   assert(!equal(dp2.y_, dp1.y_));
 
-  const double m0 = (dp2.x_ - dp0.x_) / (dp2.y_ - dp0.y_);
-  const double m1 = (dp2.x_ - dp1.x_) / (dp2.y_ - dp1.y_);
-  const auto steps = dp2.y_ - dp0.y_;
-  auto y = std::ceil(dp0.y_) - 1;
-  double x0 = dp0.x_ + m0;
-  double x1 = dp1.x_ + m1;
+  const T m_left = (dp2.x_ - dp0.x_) / (dp2.y_ - dp0.y_);
+  const T m_right = (dp2.x_ - dp1.x_) / (dp2.y_ - dp1.y_);
+  
+
+  const auto steps = std::ceil(dp2.y_ - dp0.y_);
+  auto y = std::ceil(dp0.y_);
+  T x0 = dp0.x_ + m_left * (y - dp0.y_);
+  T x1 = dp1.x_ + m_right * (y - dp0.y_);
 
   RectI clipRect(0, 0, buffer_.getWidth() - 1, buffer_.getHeight() - 1);
-  //clipLine(dp0, dp1, clipRect);
-  drawLine2D_Horizontal(dp0, dp1, c);
-
   for (int i = 0; i < steps; ++i) {
     auto ldpt0 = Point2<T>{x0, y};
     auto ldpt1 = Point2<T>{x1, y};
@@ -123,8 +122,8 @@ void Renderer::fillFlatTopTriangle2D(const Point2<T>& p0, const Point2<T>& p1, c
 
     drawLine2D_Horizontal(ldpt0, ldpt1, c);
     ++y;
-    x0 += m0;
-    x1 += m1;
+    x0 += m_left;
+    x1 += m_right;
   }
 }
 
@@ -146,25 +145,26 @@ void Renderer::fillFlatBottomTriangle2D(const Point2<T>& p0, const Point2<T>& p1
   assert(!equal(dp2.y_, dp0.y_));
   assert(!equal(dp2.y_, dp1.y_));
 
-  const auto m0 = -(dp2.x_ - dp0.x_) / (dp2.y_ - dp0.y_);
-  const auto m1 = -(dp2.x_ - dp1.x_) / (dp2.y_ - dp1.y_);
-  const int steps = static_cast<int>(std::ceil(dp0.y_ - dp2.y_) - 1);
-  auto y = dp0.y_ - 1.;
-  auto x0 = dp0.x_ + m0;
-  auto x1 = dp1.x_ + m1;
+  const auto height = dp0.y_ - dp2.y_;
+  const auto m_left = (dp0.x_ - dp2.x_) / height;
+  const auto m_right = (dp1.x_ - dp2.x_) / height;
+  
+  const auto steps = std::ceil(height)
+  auto y = std::ceil(dp2.y_);
+  
+  auto x0 = dp0.x_ + m_left * (y - dp2.y_);
+  auto x1 = dp1.x_ + m_right * (y - dp2.y_);
 
   RectI clipRect(0, 0, buffer_.getWidth() - 1, buffer_.getHeight() - 1);
- // clipLine(dp0, dp1, clipRect);
-  drawLine2D_Horizontal(dp0, dp1, c);
   for (int i = 0; i < steps; ++i) {
     auto ldpt0 = Point2<T>{x0, y};
     auto ldpt1 = Point2<T>{x1, y};
     //clipLine(ldpt0, ldpt1, clipRect);
 
     drawLine2D_Horizontal(ldpt0, ldpt1, c);
-    --y;
-    x0 += m0;
-    x1 += m1;
+    ++y;
+    x0 += m_left;
+    x1 += m_right;
   }
 }
 
@@ -194,7 +194,7 @@ void Renderer::fillTriangle2D(const Point2<T>& p0, const Point2<T>& p1, const Po
   } else {
     assert(!equal(dp2.y_, dp0.y_));
     const auto m = (dp2.x_ - dp0.x_) / (dp2.y_ - dp0.y_);
-    const auto ix = std::ceil(dp0.x_ + (dp1.y_ - dp0.y_)*m) -1;
+    const auto ix = dp0.x_ + (dp1.y_ - dp0.y_) * m;
 
     fillFlatBottomTriangle2D(dp0, dp1, Point2<T>{ix, dp1.y_}, c);
     fillFlatTopTriangle2D(dp1, Point2<T>{ix, dp1.y_}, dp2, c);
