@@ -527,7 +527,7 @@ Matrix<T, 4U, 4U> buildTranslateMatrix4x4(T x, T y, T z) {
 
 template<typename T>
 Matrix<T, 4U, 4U> buildScaleMatrix4x4(T sx, T sy, T sz) {
-  Matrix<T, 4U, 4U> scaleMat = {sx, 0,  0,  0,
+  Matrix<T, 4U, 4U> scaleMat =     {sx, 0,  0,  0,
                                     0,  sy, 0,  0,
                                     0,  0,  sz, 0,
                                     0,  0,  0,  1};

@@ -105,10 +105,10 @@ BOOST_AUTO_TEST_CASE(s3dObject_unittest1) {
   }
 
   VertexList<Point2FD> vl{Point2FD(1, 2), Point2FD(3, 4)};
-  BOOST_CHECK(obj.size() == 2);
+  BOOST_CHECK(vl.size() == 2);
   vl.push_back(Point2FD(5, 6));
 
-  BOOST_CHECK(obj.size() == 3);
+  BOOST_CHECK(vl.size() == 3);
 
 }
 

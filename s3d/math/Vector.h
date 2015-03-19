@@ -21,6 +21,9 @@ public:
 template<typename T>
 class Vector2 {
 public:
+  typedef T value_type;
+
+public:
   T x_;
   T y_;
 
@@ -86,6 +89,9 @@ public:
 
 template<typename T>
 class Vector3 {
+public:
+  typedef T value_type;
+
 public:
   T x_;
   T y_;
@@ -165,6 +171,9 @@ public:
 
 template<typename T>
 class Vector4 {
+public:
+  typedef T value_type;
+
 public:
   T x_;
   T y_;

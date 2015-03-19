@@ -271,24 +271,61 @@ void setPointFromVertexList(Object::VertexListType& vl, size_t index, const Obje
   vl[index].setPoint(ptd);
 }
 
+template <typename T, typename POLY>
+void computeNormal(POLY& poly, VertexList<T>& vl, bool isNormalize = true) {
+  Vector4FD u(vl[poly[0]], vl[poly[1]]);
+  Vector4FD v(vl[poly[1]], vl[poly[2]]);
 
-template<typename POLYS, typename VerList>
-void removeBackface(POLYS& lt, VerList& vl) {
-  for (auto& poly : lt) {
-//    poly.computeNormal(vl);
+  normal_ = u.crossProduct(v);
 
-//    if (!camera.isBackface(getPointFromVertexList(vl, poly.at(0)), itp.getNormal())) {
-     // poly.setState(kPolygonStateVisible);
-    //}
+  if (isNormalize)
+    normal_.normalizeSelf();
+}
+
+template <typename POLY>
+void computeNormal(POLY& poly, VertexList<Vertex>& vl, bool isNormalize = true) {
+  Vertex::PointType u(vl[poly[0]].getPoint(), vl[poly[1]].getPoint());
+  Vertex::PointType v(vl[poly[1]].getPoint(), vl[poly[2]].getPoint());
+
+  auto normal = u.crossProduct(v);
+  if (isNormalize)
+    normal.normalizeSelf();
+
+  poly.setNormal(normal);
+}
+
+template<typename POLYLIST, typename VerList>
+void computePolysNormal(POLYLIST& pl, VerList& vl) {
+  for (auto& poly : pl) {
+    computeNormal(poly, vl);
   }
 }
 
-template<typename POLYS, typename MATRIX, typename VerList>
-void transformPolys(POLYS& lt, const MATRIX& mat, VerList& vl) {
-  for (auto& poly : lt) {
+//template<typename POLY, typename VerList>
+//void removeBackFace(POLY& poly, VerList& vl) {
+//  if (!camera.isBackface(getPointFromVertexList(vl, poly.at(0)), itp.getNormal())) {
+//    poly.setState(kPolygonStateVisible);
+//  }
+//}
+
+template<typename POLY, typename MATRIX, typename VerList>
+void transformPoly(POLY& poly, const MATRIX& mat, VerList& vl) {
     for (auto index : poly) {
       vl[index] = vl[index] * mat;
     }
+}
+
+template<typename PolyList, typename MATRIX, typename VerList>
+void transformPolyList(PolyList& lt, const MATRIX& mat, VerList& vl) {
+  for (auto& poly : lt) {
+    transformPoly(poly, mat, vl);
+  }
+}
+
+template<typename OBJPTR, typename MATRIX, typename VerList>
+void transformObject(OBJPTR obj, const MATRIX& mat, VerList& vl) {
+  for (auto& poly : *obj) {
+    transformPoly(poly, mat, vl);
   }
 }
 
@@ -310,6 +347,25 @@ void renderPolys(Renderer& renderer, POLYS& polys, VerList& vl) {
   }
 }
 
+template<typename POLYS, typename VerList>
+void renderPolysF(Renderer& renderer, POLYS& polys, VerList& vl) {
+  int id = -1;
+  for (auto& poly : polys) {
+    if (1 || poly.getState() & kPolygonStateVisible) {
+      id = poly[0];
+      Point2<double> p0 = {getPointFromVertexList(vl, id).getX(), getPointFromVertexList(vl, id).getY()};
+
+      id = poly[1];
+      Point2<double> p1 = {getPointFromVertexList(vl, id).getX(), getPointFromVertexList(vl, id).getY()};
+
+      id = poly[2];
+      Point2<double> p2 = {getPointFromVertexList(vl, id).getX(), getPointFromVertexList(vl, id).getY()};
+      renderer.fillTriangle2D(p0, p1, p2, poly.getColor());
+    }
+  }
+}
+
+
 void Window::onDraw(Renderer& renderer) {
   RECT rect;
   ::GetWindowRect(hWnd_, &rect);
@@ -320,29 +376,19 @@ void Window::onDraw(Renderer& renderer) {
 
   auto startx = wx - 100;
 
-  ObjectPtr objs[4];
+  ObjectPtr objs[1];
   objs[0].reset(new Object);
-  objs[1].reset(new Object);
-  objs[2].reset(new Object);
-  objs[3].reset(new Object);
+  //objs[1].reset(new Object);
+  //objs[2].reset(new Object);
+  //objs[3].reset(new Object);
 
   VertexList<Vertex> localVertexList;
   VertexList<Vertex> transVertexList;
 
-  loadObject(objs[0], "cube1.plg", localVertexList, 2.1F);
-  loadObject(objs[1], "tank2.plg", localVertexList, 0.1F);
-  loadObject(objs[2], "tank3.plg", localVertexList, 0.1F);
-  loadObject(objs[3], "tower.plg", localVertexList, 0.1F);
-
-  auto transMat = buildTranslateMatrix4x4<double>(-30., 0., 0.);
-  for (auto &obj : objs) {
-    for (auto &poly : *obj) {
-      for (auto v : poly) {
-        localVertexList[v] = localVertexList[v] * transMat;
-      }
-    }
-  }
-
+  loadObject(objs[0], "cube1.plg", localVertexList, 3.1F);
+  //loadObject(objs[1], "tank2.plg", localVertexList, 0.1F);
+  //loadObject(objs[2], "tank3.plg", localVertexList, 0.1F);
+  //loadObject(objs[3], "tower.plg", localVertexList, 0.1F);
 
   auto rotateMat = buildRotateMatrix4x4YXZ<double>(angley, anglex, anglez);
   for (auto &v : localVertexList) {
@@ -351,9 +397,17 @@ void Window::onDraw(Renderer& renderer) {
 
   transVertexList = localVertexList;
 
-  const auto scaleMat = buildScaleMatrix4x4<double>(1.5, 1., 1.);
+  const auto scaleMat = buildScaleMatrix4x4<double>(1.0, 1., 1.);
   for (auto &v : transVertexList) {
-    v = v * scaleMat;
+    //v = v * scaleMat;
+  }
+
+  //for (auto &v : transVertexList) {
+    //v = v * transMat;
+  //}
+
+  for (auto &obj : objs) {
+   // transformObject(obj, transMat, transVertexList);
   }
 
   vector<Polygon3> rendererList;
@@ -361,6 +415,10 @@ void Window::onDraw(Renderer& renderer) {
   CameraUVN camera({cx, cy, cz - 100}, {cx, cy, 1}, 90, 10, 1000, viewWidth, winHeight);
   auto matWorldToCameraMatrix4x4FD = camera.getWorldToCameraMatrix4x4FD();
 
+  for (auto &obj : objs) {
+    computePolysNormal(obj->getPolygonList(), transVertexList);
+  }
+  
   for (auto &v : transVertexList) {
     v = v * matWorldToCameraMatrix4x4FD;
   }
@@ -376,7 +434,7 @@ void Window::onDraw(Renderer& renderer) {
   }
 
   for (auto &obj : objs) {
-    renderPolys(renderer, obj->getPolygonList(), transVertexList);
+    renderPolysF(renderer, obj->getPolygonList(), transVertexList);
   }
 
   return;

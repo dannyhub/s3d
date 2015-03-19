@@ -218,4 +218,79 @@ BOOST_AUTO_TEST_CASE(testMatrix4x4) {
     BOOST_CHECK(s[0][2] == tz);
     BOOST_CHECK(equalZero(tz - 1.));
   }
+
+  {
+    auto mat = buildTranslateMatrix4x4<int>(11,22,33);
+    Matrix<int, 1, 4> pt = {1, 2, 3, 1};
+    Matrix<int, 1, 4> s = pt * mat;
+
+    BOOST_CHECK(s[0][0] == 12);
+    BOOST_CHECK(s[0][1] == 24);
+    BOOST_CHECK(s[0][2] == 36);
+    BOOST_CHECK(s[0][3] == 1);
+  }
+
+  {
+    auto mat = buildTranslateMatrix4x4<int>(0, 0, 0);
+    Matrix<int, 1, 4> pt = {1, 2, 3, 1};
+    Matrix<int, 1, 4> s = pt * mat;
+
+    BOOST_CHECK(s == pt);
+  }
+
+  {
+    auto mat = buildTranslateMatrix4x4<int>(34, 0, 0);
+    Matrix<int, 1, 4> pt = {1, 2, 3, 1};
+    Matrix<int, 1, 4> s = pt * mat;
+
+    BOOST_CHECK(s[0][0] == 35);
+    BOOST_CHECK(s[0][1] == 2);
+    BOOST_CHECK(s[0][2] == 3);
+    BOOST_CHECK(s[0][3] == 1);
+  }
+
+  {
+    auto mat = buildTranslateMatrix4x4<double>(11, 22, 33);
+    Matrix<double, 1, 4> pt = {1, 2, 3, 1};
+    Matrix<double, 1, 4> s = pt * mat;
+
+    BOOST_CHECK(s[0][0] == 12);
+    BOOST_CHECK(s[0][1] == 24);
+    BOOST_CHECK(s[0][2] == 36);
+    BOOST_CHECK(s[0][3] == 1);
+  }
+
+  {
+    auto mat = buildScaleMatrix4x4<double>(0, 0, 0);
+    Matrix<double, 1, 4> pt = {1, 2, 3, 1};
+    Matrix<double, 1, 4> s = pt * mat;
+
+    BOOST_CHECK(s[0][0] == 0);
+    BOOST_CHECK(s[0][1] == 0);
+    BOOST_CHECK(s[0][2] == 0);
+    BOOST_CHECK(s[0][3] == 1);
+  }
+
+  {
+    auto mat = buildScaleMatrix4x4<int>(3, 4, 5);
+    Matrix<int, 1, 4> pt = {1, 2, 3, 1};
+    Matrix<int, 1, 4> s = pt * mat;
+
+    BOOST_CHECK(s[0][0] == 3);
+    BOOST_CHECK(s[0][1] == 8);
+    BOOST_CHECK(s[0][2] == 15);
+    BOOST_CHECK(s[0][3] == 1);
+  }
+
+  {
+    auto mat = buildScaleMatrix4x4<double>(3, 4, 5);
+    Matrix<double, 1, 4> pt = {1, 2, 3, 1};
+    Matrix<double, 1, 4> s = pt * mat;
+
+    BOOST_CHECK(s[0][0] == 3);
+    BOOST_CHECK(s[0][1] == 8);
+    BOOST_CHECK(s[0][2] == 15);
+    BOOST_CHECK(s[0][3] == 1);
+  }
 }
+
