@@ -149,7 +149,7 @@ void Renderer::fillFlatBottomTriangle2D(const Point2<T>& p0, const Point2<T>& p1
   const auto m_left = (dp0.x_ - dp2.x_) / height;
   const auto m_right = (dp1.x_ - dp2.x_) / height;
   
-  const auto steps = std::ceil(height)
+  const auto steps = std::ceil(height);
   auto y = std::ceil(dp2.y_);
   
   auto x0 = dp0.x_ + m_left * (y - dp2.y_);
