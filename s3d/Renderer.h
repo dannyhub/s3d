@@ -111,31 +111,29 @@ void Renderer::fillFlatTopTriangle2D(const Point2<T>& p0, const Point2<T>& p1, c
     swap(dp0, dp1);
   }
 
-
   assert(dp2.y_ > dp0.y_ && dp2.y_ > dp1.y_);
   assert(equal(dp0.y_, dp1.y_));
   assert(!equal(dp2.y_, dp0.y_));
   assert(!equal(dp2.y_, dp1.y_));
 
-  const auto height = (dp2.y_ - dp0.y_);
-
+  const auto height = dp2.y_ - dp0.y_;
   assert(!equalZero(height));
 
   const T m_left = (dp2.x_ - dp0.x_) / height; 
   const T m_right = (dp2.x_ - dp1.x_) / height; 
   
-  const auto steps = std::ceil(dp2.y_ - dp0.y_) ;
-  auto y = std::ceil(dp0.y_);
-  T x0 = dp0.x_ + m_left * (y - dp0.y_);
-  T x1 = dp1.x_ + m_right * (y - dp0.y_);
+  int ys = static_cast<int>(std::ceil(dp0.y_));
+  const int ye = static_cast<int>(std::ceil(dp2.y_) - 1); 
 
-  for (int i = 0; i < steps; ++i) {
-    auto ldpt0 = Point2<T>{x0, y};
-    auto ldpt1 = Point2<T>{x1, y};
+  T x0 = dp0.x_ + m_left * (ys - dp0.y_);
+  T x1 = dp1.x_ + m_right * (ys - dp0.y_);
+
+  for (; ys <= ye; ++ys) {
+    auto ldpt0 = Point2<T>{x0, (T)ys};
+    auto ldpt1 = Point2<T>{x1, (T)ys};
 
     if (ldpt0.x_ < ldpt1.x_)
       drawLine2D_Horizontal(ldpt0, ldpt1, c);
-    ++y;
     x0 += m_left;
     x1 += m_right;
   }
