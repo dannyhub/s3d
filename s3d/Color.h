@@ -85,6 +85,15 @@ public:
     return *this;
   }
 
+  bool operator== (const Color& c) {
+    return c.argb_ == argb_;
+  }
+
+  bool operator!= (const Color& c) {
+    return c.argb_ != argb_;
+  }
+
+
   //Color operator+ (const Color& cs) {
   //  Color cd;
   //  cd.color_.blue_ = static_cast<decltype(color_.blue_)>(std::max(cs.color_.blue_ + color_.blue_, 255));
@@ -114,6 +123,8 @@ private:
     uint8_t argbArray_[4];
   };
 };
+
+
 
 }// s3d
 

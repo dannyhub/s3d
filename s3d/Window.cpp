@@ -386,9 +386,12 @@ void Window::onDraw(Renderer& renderer) {
   VertexList<Vertex> transVertexList;
 
   loadObject(objs[0], "cube1.plg", localVertexList, 3.1F);
-  //loadObject(objs[1], "tank2.plg", localVertexList, 0.1F);
-  //loadObject(objs[2], "tank3.plg", localVertexList, 0.1F);
-  //loadObject(objs[3], "tower.plg", localVertexList, 0.1F);
+  /*loadObject(objs[1], "tank2.plg", localVertexList, 0.1F);
+  loadObject(objs[2], "tank3.plg", localVertexList, 0.1F);
+  loadObject(objs[3], "tower.plg", localVertexList, 0.1F);
+*/
+  //renderer.fillFlatBottomTriangle2D(Point2<double>{200., 200.}, Point2<double>{100., 300.}, Point2<double>{300., 300.}, Color(255, 0, 0));
+  //renderer.fillTriangle2D(Point2<double>{67., 200.}, Point2<double>{70., 300.}, Point2<double>{450., 360.}, Color(255, 255, 0));
 
   auto rotateMat = buildRotateMatrix4x4YXZ<double>(angley, anglex, anglez);
   for (auto &v : localVertexList) {
