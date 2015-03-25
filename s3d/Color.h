@@ -63,6 +63,15 @@ public:
     return argbArray_[index];
   }
 
+  void setValue(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0) {
+    argb_ = b | ((uint16_t)g << 8) | ((uint32_t)r << 16) | ((uint32_t)a << 24);;
+  }
+
+  template<typename T>
+  void setValue(T r, T g, T b, T a = 0) {
+    setValue(static_cast<uint8_t>(std::min(T(255), r)), static_cast<uint8_t>(std::min(T(255), g)), static_cast<uint8_t>(std::min(T(255), b)));
+  }
+
   void setValue(unsigned int index, uint8_t v) {
     assert(index < 4);
     argbArray_[index] = v;

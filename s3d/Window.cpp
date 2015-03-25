@@ -374,23 +374,26 @@ void Window::onDraw(Renderer& renderer) {
   const int viewWidth = winWidth;
   //  int viewHeight = winHeight;
 
-  auto startx = wx - 100;
+//  auto startx = wx - 100;
 
-  ObjectPtr objs[1];
+  ObjectPtr objs[4];
   objs[0].reset(new Object);
-  //objs[1].reset(new Object);
-  //objs[2].reset(new Object);
-  //objs[3].reset(new Object);
+  objs[1].reset(new Object);
+  objs[2].reset(new Object);
+  objs[3].reset(new Object);
 
   VertexList<Vertex> localVertexList;
   VertexList<Vertex> transVertexList;
 
   loadObject(objs[0], "cube1.plg", localVertexList, 3.1F);
-  /*loadObject(objs[1], "tank2.plg", localVertexList, 0.1F);
+  loadObject(objs[1], "tank2.plg", localVertexList, 0.1F);
   loadObject(objs[2], "tank3.plg", localVertexList, 0.1F);
   loadObject(objs[3], "tower.plg", localVertexList, 0.1F);
-*/
-  //renderer.fillFlatBottomTriangle2D(Point2<double>{200., 200.}, Point2<double>{100., 300.}, Point2<double>{300., 300.}, Color(255, 0, 0));
+
+  Color c1(255, 0, 0), c2(0, 0, 255), c3(0, 0, 255);
+
+  GouraudFiller<Point2<double>, decltype(renderer)> filler(renderer, Point2<double>{200., 200.}, Point2<double>{100., 300.}, Point2<double>{300., 600.}, c1, c2, c3);
+  renderer.fillTriangle2DCB(Point2<double>{200., 200.}, Point2<double>{100., 300.}, Point2<double>{300., 600.}, filler);
   //renderer.fillTriangle2D(Point2<double>{67., 200.}, Point2<double>{70., 300.}, Point2<double>{450., 360.}, Color(255, 255, 0));
 
   auto rotateMat = buildRotateMatrix4x4YXZ<double>(angley, anglex, anglez);
@@ -401,17 +404,17 @@ void Window::onDraw(Renderer& renderer) {
   transVertexList = localVertexList;
 
   const auto scaleMat = buildScaleMatrix4x4<double>(1.0, 1., 1.);
-  for (auto &v : transVertexList) {
+//  for (auto &v : transVertexList) {
     //v = v * scaleMat;
-  }
+  //}
 
   //for (auto &v : transVertexList) {
     //v = v * transMat;
   //}
 
-  for (auto &obj : objs) {
+//  for (auto &obj : objs) {
    // transformObject(obj, transMat, transVertexList);
-  }
+ // }
 
   vector<Polygon3> rendererList;
 
