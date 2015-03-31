@@ -392,7 +392,7 @@ void Window::onDraw(Renderer& renderer) {
 
   Color c1(255, 0, 0), c2(0, 0, 255), c3(0, 0, 255);
 
-  GouraudFiller<Point2<double>, decltype(renderer)> filler(renderer, Point2<double>{200., 200.}, Point2<double>{100., 300.}, Point2<double>{300., 600.}, c1, c2, c3);
+  GouraudFiller<Point2<double> > filler(Point2<double>{200., 200.}, Point2<double>{100., 300.}, Point2<double>{300., 600.}, c1, c2, c3);
   renderer.fillTriangle2DCB(Point2<double>{200., 200.}, Point2<double>{100., 300.}, Point2<double>{300., 600.}, filler);
   //renderer.fillTriangle2D(Point2<double>{67., 200.}, Point2<double>{70., 300.}, Point2<double>{450., 360.}, Color(255, 255, 0));
 

@@ -191,7 +191,6 @@ void Renderer::fillFlatBottomTriangle2D(const Point2<T>& p0, const Point2<T>& p1
 }
 
 
-
 template<typename T>
 void Renderer::fillTriangle2D(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2, const Color& c) {
   if ((equal(p0.x_, p1.x_) && equal(p1.x_, p2.x_)) || (equal(p0.y_, p1.y_) && equal(p1.y_, p2.y_))) // triangle is a line
@@ -226,6 +225,13 @@ void Renderer::fillTriangle2D(const Point2<T>& p0, const Point2<T>& p1, const Po
     fillFlatTopTriangle2D(dp1, Point2<T>{newx, dp1.y_}, dp2, c);
   }
 }
+
+enum TriangleType {
+  kTriangleType_Invalid = 0,
+  kTriangleType_FlatTop,
+  kTriangleType_FlatBottom,
+  kTriangleType_BottomTop
+};
 
 template<typename T, typename Filler>
 void Renderer::fillTriangle2DCB(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2, Filler& filler) {
@@ -299,7 +305,7 @@ void Renderer::fillFlatTopTriangle2DCB(const Point2<T>& p0, const Point2<T>& p1,
     auto ldpt0 = Point2<T>{x0, (T)ys};
     auto ldpt1 = Point2<T>{x1, (T)ys};
 
-    filler(ldpt0, ldpt1);
+    filler(*this, ldpt0, ldpt1, kTriangleType_FlatTop);
     x0 += m_left;
     x1 += m_right;
   }
@@ -346,21 +352,60 @@ void Renderer::fillFlatBottomTriangle2DCB(const Point2<T>& p0, const Point2<T>& 
     auto ldpt0 = Point2<T>{x0, (T)ys};
     auto ldpt1 = Point2<T>{x1, (T)ys};
 
-    filler(ldpt0, ldpt1);
+    filler(*this, ldpt0, ldpt1, kTriangleType_FlatBottom);
     x0 += m_left;
     x1 += m_right;
   }
 }
 
-template<typename PT, typename RENDERER>
+//pt1-3 is the points belong a triangle, splitPT is a new point to split a triangle to two flat triangles, 
+//return kTriangleType_BottomTop : the triangle was split, otherwise  splitPT not change. 
+
+template<typename PT>
+TriangleType splitTriangleToFlat(const PT& pt1, const PT& pt2, const PT& pt3, PT& splitPT) {
+  if ((equal(pt1.x_, pt2.x_) && equal(pt2.x_, pt3.x_)) || (equal(pt1.y_, pt2.y_) && equal(pt2.y_, pt3.y_))) //line
+    return kTriangleType_Invalid;
+
+  auto dp0 = pt1, dp1 = pt2, dp2 = pt3;
+  if (dp0.y_ > dp1.y_)
+    std::swap(dp0, dp1);
+
+  if (dp1.y_ > dp2.y_)
+    std::swap(dp1, dp2);
+
+  if (dp0.y_ > dp1.y_)
+    std::swap(dp0, dp1);
+
+  assert(dp0.y_ <= dp1.y_ &&  dp1.y_ <= dp2.y_);
+
+  if (equal(dp0.y_, dp1.y_)) {
+    return kTriangleType_FlatTop;
+  } else if (equal(dp1.y_, dp2.y_)) {
+    return kTriangleType_FlatBottom;
+  } else {
+    assert(!equal(dp2.y_, dp0.y_));
+    assert(!equalZero(dp2.y_ - dp0.y_));
+
+    const auto m = (dp2.x_ - dp0.x_) / (dp2.y_ - dp0.y_);
+    const auto newx = dp0.x_ + (dp1.y_ - dp0.y_) * m;
+    
+    splitPT.x_ = newx;
+    splitPT.y_ = dp1.y_;
+    return kTriangleType_BottomTop;
+  }
+}
+
+template<typename PT>
 class GouraudFiller {
 public:
-  GouraudFiller(RENDERER& renderer, const PT& pt1, const PT& pt2, const PT& pt3, const Color& c1, const Color& c2, const Color& c3)
-    : pt1_(pt1), pt2_(pt2), pt3_(pt3),
-    c1_(c1), c2_(c2), c3_(c3),
-    renderer_(renderer) {
-
-    dy_ = 1;
+  GouraudFiller(const PT& pt1, const PT& pt2, const PT& pt3, const Color& c1, const Color& c2, const Color& c3)
+    : pt1_(pt1), 
+      pt2_(pt2),
+      pt3_(pt3),
+      c1_(c1),
+      c2_(c2),
+      c3_(c3) {
+ 
     if (pt1_.y_ > pt2_.y_) {
       std::swap(pt1_, pt2_);
       std::swap(c1_, c2_);
@@ -378,73 +423,113 @@ public:
 
     assert(pt1_.y_ <= pt2_.y_ &&  pt2_.y_ <= pt3_.y_);
 
-    if (equal(pt1_.y_, pt2_.y_)) {
-      splity_ = pt3_.y_;
-    } else if (equal(pt2_.y_, pt3_.y_)) {
-      splity_ = pt3_.y_;
+    PT ptSplit;
+    Color curColorLeft, curColorRight;
+
+    auto triType = splitTriangleToFlat(pt1_, pt2_, pt3_, ptSplit);
+    if (kTriangleType_FlatBottom == triType) {
+      if (pt3_.x_ < pt2_.x_) {
+        std::swap(pt3_, pt2_);
+        std::swap(c2_, c3_);
+      }
+
+      curColorLeft = c1_;
+      curColorRight = c1_;
+      triangleType_ = kTriangleType_FlatBottom;
+
+    } else if (kTriangleType_FlatTop == triType) {
+      if (pt2_.x_ < pt1_.x_) {
+        std::swap(pt1_, pt2_);
+        std::swap(c1_, c2_);
+      }
+
+      curColorLeft = c1_;
+      curColorRight = c2_;
+      triangleType_ = kTriangleType_FlatTop;
+
+    } else if (kTriangleType_BottomTop == triType) {
+      if (pt3_.x_ < pt2_.x_) {
+        std::swap(pt3_, pt2_);
+        std::swap(c2_, c3_);
+      }
+
+      pt4_ = pt3_;
+      pt3_ = ptSplit;
+      c4_ = c3_;
+
+      //compute c3
+      const auto h = pt4_.y_ - pt1_.y_;
+      const auto dist = pt3_.y_ - pt1_.y_;
+
+      const auto r = dist * double(c4_.getRed() - c1_.getRed()) / (h);
+      const auto b = dist * double(c4_.getBlue() - c1_.getBlue()) / (h);
+      const auto g = dist * double(c4_.getGreen() - c1_.getGreen()) / (h);
+
+      c3_.setValue(r, g, b);
+      curColorLeft = c1_;
+      curColorRight = c1_;
+
+      triangleType_ = kTriangleType_FlatBottom;
     } else {
-      splity_ = pt2_.y_;
+      triangleType_ = kTriangleType_Invalid;
     }
 
-    height_ = splity_ - pt1_.y_;
+    height_ = pt3_.y_ - pt1_.y_;
 
-    curColorLeft_ = c1_;
-    curColorRight_ = c1;
+    lr_ = curColorLeft.getRed();
+    lb_ = curColorLeft.getBlue();
+    lg_ = curColorLeft.getGreen();
 
-    lr_ = curColorLeft_.getRed();
-    lb_ = curColorLeft_.getBlue();
-    lg_ = curColorLeft_.getGreen();
-
-    rr_ = curColorRight_.getRed();
-    rb_ = curColorRight_.getBlue();
-    rg_ = curColorRight_.getGreen();
+    rr_ = curColorRight.getRed();
+    rb_ = curColorRight.getBlue();
+    rg_ = curColorRight.getGreen();
      
   }
 
-  void operator() (const PT& p0, const PT& p1) {
+  template<typename RENDERER>
+  void operator() (RENDERER& renderer_, const PT& p0, const PT& p1, TriangleType triType) {
+    if (kTriangleType_Invalid == triType)
+      return;
+
+    assert(triType != kTriangleType_BottomTop);
     assert(p0.y_ == p1.y_);
     assert(p0.x_ <= p1.x_);
 
-    const auto xd = p1.x_ < p0.x_ ? p1.x_ : p0.x_;
-    int  startX = static_cast<int>(std::ceil(xd));
+    int  startX = static_cast<int>(std::ceil(p0.x_));
     int  endX = static_cast<int>(std::ceil(p1.x_) - 1);
     const int y = static_cast<int>(p0.y_);
 
     const auto width = p1.x_ - p0.x_;
-    const auto redi = (curColorRight_.getRed() - curColorLeft_.getRed()) / width;
-    const auto bluei = (curColorRight_.getBlue() - curColorLeft_.getBlue()) / width;
-    const auto greeni = (curColorRight_.getGreen() - curColorLeft_.getGreen()) / width;
+    if (equalZero(width))
+      return;
 
-    double r = curColorLeft_.getRed();
-    double b = curColorLeft_.getBlue();
-    double g = curColorLeft_.getGreen();
+    const auto redi = (rr_ - lr_) / width;
+    const auto bluei = (rb_ - lb_) / width;
+    const auto greeni = (rg_ - lg_) / width;
+
+    double r = lr_; 
+    double b = lb_;
+    double g = lg_; 
+    Color c;
+    c.setValue(r, g, b);
 
     for (; startX <= endX; ++startX) {
-      Color c(static_cast<int>(std::min(255.0, r)), static_cast<int>(std::min(255.0, g)), static_cast<int>(std::min(255.0, b)));
       renderer_.drawPixel2D({startX, y}, c.getABGRValue());
-       r += redi;
-       b += bluei;
-       g += greeni;
+      r += redi;
+      b += bluei;
+      g += greeni;
+      c.setValue(r, g, b);
     }
 
-    if (static_cast<int>(std::ceil(splity_) - 1.) == dy_) {
-      height_ = pt3_.y_ - splity_;
-
-      splity_ = -1;
-      c1_ = curColorLeft_;
-      c2_ = curColorRight_;
+    if (triangleType_ != triType) {
+      c3_ = c4_;
+      c1_ = c2_;
+      c2_ = c3_;
+      height_ = pt4_.y_ - pt3_.y_;
+      triangleType_ = triType;
     }
 
-    if (splity_ < 0) {
-      lr_ += double(c3_.getRed() - c1_.getRed()) / height_;
-      lb_ += double(c3_.getBlue() - c1_.getBlue()) / height_;
-      lg_ += double(c3_.getGreen() - c1_.getGreen()) / height_;
-
-      rr_ += double(c3_.getRed() - c2_.getRed()) / height_;
-      rb_ += double(c3_.getBlue() - c2_.getBlue()) / height_;
-      rg_ += double(c3_.getGreen() - c2_.getGreen()) / height_;
-
-    } else {
+    if (triType == kTriangleType_FlatBottom) {
       lr_ += double(c2_.getRed() - c1_.getRed()) / height_;
       lb_ += double(c2_.getBlue() - c1_.getBlue()) / height_;
       lg_ += double(c2_.getGreen() - c1_.getGreen()) / height_;
@@ -452,28 +537,25 @@ public:
       rr_ += double(c3_.getRed() - c1_.getRed()) / height_;
       rb_ += double(c3_.getBlue() - c1_.getBlue()) / height_;
       rg_ += double(c3_.getGreen() - c1_.getGreen()) / height_;
-    }
-    
-    curColorLeft_.setValue(lr_, lg_, lb_);
-    curColorRight_.setValue(rr_, rg_, rb_ );
-    if (pt3_.x_ < pt2_.x_) {
-      std::swap(curColorLeft_, curColorRight_);
+    } else if (triType == kTriangleType_FlatTop) {
+      lr_ += double(c3_.getRed() - c1_.getRed()) / height_;
+      lb_ += double(c3_.getBlue() - c1_.getBlue()) / height_;
+      lg_ += double(c3_.getGreen() - c1_.getGreen()) / height_;
+
+      rr_ += double(c3_.getRed() - c2_.getRed()) / height_;
+      rb_ += double(c3_.getBlue() - c2_.getBlue()) / height_;
+      rg_ += double(c3_.getGreen() - c2_.getGreen()) / height_;
     }
 
-    ++dy_;
   }
 
 private:
-  RENDERER& renderer_;
-  PT pt1_; PT pt2_; PT pt3_;
-  Color c1_; Color c2_; Color c3_;
+  PT pt1_; PT pt2_; PT pt3_; PT pt4_;
+  Color c1_; Color c2_; Color c3_; Color c4_;
 
-  Color curColorLeft_, curColorRight_;
-  double splity_;
-  int dy_;
-  double idy_left_, idy_right;
   double lr_, lb_, lg_, rr_, rb_, rg_;
   double height_;
+  TriangleType triangleType_;
 };
 
 
