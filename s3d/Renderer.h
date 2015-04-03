@@ -75,6 +75,9 @@ public:
   template<typename T, typename Filler>
   void fillFlatBottomTriangle2DCB(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2, Filler& filler);
 
+  template<typename T, typename BITMAP>
+  void drawBitmap(const Point2<T>& p0, BITMAP& bmp);
+
 #ifdef WIN32_GDI_RENDERDER
   HDC hdc_;
 #endif
@@ -82,6 +85,11 @@ public:
 private:
   RendererBuffer buffer_;
 };
+
+inline
+void Renderer::drawPixel2D(const Point2<int>& p0, const Color& c) {
+  buffer_.setPixel(p0.x_, p0.y_, c.getABGRValue());
+}
 
 template<typename T>
 void Renderer::drawLine2D_Horizontal(const Point2<T>& p0, const Point2<T>& p1, const Color& c) {
@@ -558,5 +566,19 @@ private:
   TriangleType triangleType_;
 };
 
+template<typename T, typename BITMAP>
+void Renderer::drawBitmap(const Point2<T>& p0, BITMAP& bmp) {
+  const auto w = bmp.getWidth();
+  const auto h = bmp.getHeight();
+  for (int row = 0; row < h; ++row) {
+    for (int col = 0; col < w; ++col) {
+      auto x = p0.getX() + col;
+      auto y = p0.getY() + row;
+
+      if (x >= 0 && x < buffer_.getWidth() && y >= 0 && y < buffer_.getHeight())
+        drawPixel2D({x, y}, bmp.getPixel(col, row));
+    }
+  }
+}
 
 }// namespace s3d

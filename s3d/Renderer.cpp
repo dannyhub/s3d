@@ -123,10 +123,6 @@ void Renderer::drawLine2D_Bresenham(const Point2<int>& p0, const Point2<int>& p1
   }
 }
 
-void Renderer::drawPixel2D(const Point2<int>& p0, const Color& c) {
-  buffer_.setPixel(p0.x_, p0.y_, c.getABGRValue());
-}
-
 void Renderer::drawLine2D(const Point2<int>& p0, const Point2<int>& p1, const Color& c) {
   Point2<int> cp0 = p0;
   Point2<int> cp1 = p1;

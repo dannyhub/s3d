@@ -5,7 +5,7 @@
 #include "Light.h"
 #include "Vertex.h"
 #include "World.h"
-
+#include "Bitmap.h"
 
 #include "stdafx.h"
 #include "Window.h"
@@ -248,9 +248,17 @@ void loadObject(ObjectPtr obj, const char* filename, VertexList& vl, float scale
 }
 
 
+BMPBitmap bmp;
+BMPBitmap bmp1;
+BMPBitmap bmp2;
 
 bool Window::onCreate() {
-
+  
+  bmp.fromFile("cockpit03.bmp");
+ 
+  bmp1.fromFile("metal04.bmp");
+  
+  bmp2.fromFile("wall01.bmp");
   return true;
 }
 
@@ -375,6 +383,10 @@ void Window::onDraw(Renderer& renderer) {
   //  int viewHeight = winHeight;
 
 //  auto startx = wx - 100;
+  ;
+  renderer.drawBitmap(Point2<int>{ 0, 0 }, bmp);
+  renderer.drawBitmap(Point2<int>{ 100, 100 }, bmp1);
+  renderer.drawBitmap(Point2<int>{ 230, 300 }, bmp2);
 
   ObjectPtr objs[4];
   objs[0].reset(new Object);

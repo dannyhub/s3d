@@ -5,7 +5,7 @@ namespace s3d
 {
 
 CameraUVN::CameraUVN(const Point4FD& pos, const Point4FD& targetPos, double fovDegree,
-                          double nearZ, double farZ, double screenWidth, double screenHeight) {
+                     double nearZ, double farZ, double screenWidth, double screenHeight) {
   fov_ = fovDegree;
   position_ = pos;
   target_ = targetPos;
