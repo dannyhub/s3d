@@ -26,35 +26,35 @@ public:
     return argb_;
   }
   
-  uint8_t getBlue() const{
+  uint8_t blue() const{
     return color_.blue_;
   }
 
-  uint8_t getRed() const{
+  uint8_t red() const{
     return color_.red_;
   }
 
-  uint8_t getGreen() const{
+  uint8_t green() const{
     return color_.green_;
   }
 
-  uint8_t getAlpha() const{
+  uint8_t alpha() const{
     return color_.alpha_;
   }
 
-  void setBlue(uint8_t v) {
+  void blue(uint8_t v) {
     color_.blue_ = v;
   }
 
-  void setRed(uint8_t v) {
+  void red(uint8_t v) {
     color_.red_ = v;
   }
 
-  void setGreen(uint8_t v) {
+  void green(uint8_t v) {
     color_.green_ = v;
   }
 
-  void setAlpha(uint8_t v) {
+  void alpha(uint8_t v) {
     color_.alpha_ = v;
   }
 

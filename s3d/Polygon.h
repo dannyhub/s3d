@@ -58,7 +58,7 @@ public:
     return *this;
   }
 
-  Color getColor() const {
+  Color color() const {
     return color_;
   }
 

@@ -270,13 +270,13 @@ void Window::needRedraw() {
 
 //getObjectVetex(Object& obj, unsigned int index,)
 Object::PointType getPointFromVertexList(Object::VertexListType& vl, size_t index) {
-  auto pt = vl[index].getPoint();
+  auto pt = vl[index].point();
   return Object::PointType(pt.x_, pt.y_, pt.z_);
 }
 
 void setPointFromVertexList(Object::VertexListType& vl, size_t index, const Object::VertexListType::value_type::PointType& pt) {
   Object::VertexListType::value_type::PointType ptd(pt.x_, pt.y_, pt.z_);
-  vl[index].setPoint(ptd);
+  vl[index].point(ptd);
 }
 
 template <typename T, typename POLY>
@@ -292,8 +292,8 @@ void computeNormal(POLY& poly, VertexList<T>& vl, bool isNormalize = true) {
 
 template <typename POLY>
 void computeNormal(POLY& poly, VertexList<Vertex>& vl, bool isNormalize = true) {
-  Vertex::PointType u(vl[poly[0]].getPoint(), vl[poly[1]].getPoint());
-  Vertex::PointType v(vl[poly[1]].getPoint(), vl[poly[2]].getPoint());
+  Vertex::PointType u(vl[poly[0]].point(), vl[poly[1]].point());
+  Vertex::PointType v(vl[poly[1]].point(), vl[poly[2]].point());
 
   auto normal = u.crossProduct(v);
   if (isNormalize)
@@ -343,14 +343,14 @@ void renderPolys(Renderer& renderer, POLYS& polys, VerList& vl) {
   for (auto& poly : polys) {
     if (1 || poly.getState() & kPolygonStateVisible) {
       id = poly[0];
-      Point2<int> p0 = {(int)getPointFromVertexList(vl, id).getX(), (int)getPointFromVertexList(vl, id).getY()};
+      Point2<int> p0 = {(int)getPointFromVertexList(vl, id).x(), (int)getPointFromVertexList(vl, id).y()};
 
       id = poly[1];
-      Point2<int> p1 = {(int)getPointFromVertexList(vl, id).getX(), (int)getPointFromVertexList(vl, id).getY()};
+      Point2<int> p1 = {(int)getPointFromVertexList(vl, id).x(), (int)getPointFromVertexList(vl, id).y()};
 
       id = poly[2];
-      Point2<int> p2 = {(int)getPointFromVertexList(vl, id).getX(), (int)getPointFromVertexList(vl, id).getY()};
-      renderer.fillTriangle2D(p0, p1, p2, poly.getColor());
+      Point2<int> p2 = {(int)getPointFromVertexList(vl, id).x(), (int)getPointFromVertexList(vl, id).y()};
+      renderer.fillTriangle2D(p0, p1, p2, poly.color());
     }
   }
 }
@@ -361,14 +361,17 @@ void renderPolysF(Renderer& renderer, POLYS& polys, VerList& vl) {
   for (auto& poly : polys) {
     if (1 || poly.getState() & kPolygonStateVisible) {
       id = poly[0];
-      Point2<double> p0 = {getPointFromVertexList(vl, id).getX(), getPointFromVertexList(vl, id).getY()};
+      Point2<double> p0 = {getPointFromVertexList(vl, id).x(), getPointFromVertexList(vl, id).y()};
 
       id = poly[1];
-      Point2<double> p1 = {getPointFromVertexList(vl, id).getX(), getPointFromVertexList(vl, id).getY()};
+      Point2<double> p1 = {getPointFromVertexList(vl, id).x(), getPointFromVertexList(vl, id).y()};
 
       id = poly[2];
-      Point2<double> p2 = {getPointFromVertexList(vl, id).getX(), getPointFromVertexList(vl, id).getY()};
-      renderer.fillTriangle2D(p0, p1, p2, poly.getColor());
+      Point2<double> p2 = {getPointFromVertexList(vl, id).x(), getPointFromVertexList(vl, id).y()};
+      renderer.fillTriangle2D(p0, p1, p2, poly.color());
+      //Color c1(255, 0, 0), c2(0, 0, 255), c3(0, 0, 255);
+      //GouraudFiller<Point2<double> > filler(p0, p1, p2, c1, c2, c3);
+      //renderer.fillTriangle2DCB(p0, p1, p2, filler);
     }
   }
 }
@@ -384,8 +387,8 @@ void Window::onDraw(Renderer& renderer) {
 
 //  auto startx = wx - 100;
   ;
-  renderer.drawBitmap(Point2<int>{ 0, 0 }, bmp);
-  renderer.drawBitmap(Point2<int>{ 100, 100 }, bmp1);
+ // renderer.drawBitmap(Point2<int>{ 0, 0 }, bmp);
+ // renderer.drawBitmap(Point2<int>{ 100, 100 }, bmp1);
   renderer.drawBitmap(Point2<int>{ 230, 300 }, bmp2);
 
   ObjectPtr objs[4];
@@ -493,18 +496,18 @@ void Window::onDraw(Renderer& renderer) {
 //      for (int i = 0; i<3; ++i) {
 //        {
 //          auto intensity = ambientLight.computeIntensity();
-//          rgb[i] += itp.getColor().getValue(i) * intensity.getValue(i) / 255;
+//          rgb[i] += itp.color().getValue(i) * intensity.getValue(i) / 255;
 //        }
 //
 //        {
 //        auto intensity = infiniteLight.computeIntensity(itp.getNormal());
-//        //rgb[i] += itp.getColor().getValue(i) * intensity.getValue(i) / 255;
+//        //rgb[i] += itp.color().getValue(i) * intensity.getValue(i) / 255;
 //      }
 //
 //        {
 //
 //          //auto intensity = spotLight.computeIntensity(getPointFromVertexList(obj->transVertexList_, itp.at(0)), itp.getNormal());
-//         // rgb[i] += itp.getColor().getValue(i) * intensity.getValue(i) / 255;
+//         // rgb[i] += itp.color().getValue(i) * intensity.getValue(i) / 255;
 //        }
 //      }
 //
@@ -548,7 +551,7 @@ void Window::onDraw(Renderer& renderer) {
 
     //  id = itp[2];
     //  Point2<int> p2 = {(int)getPointFromVertexList(obj->transVertexList_, itp.at(id)).x_, (int)getPointFromVertexList(obj->transVertexList_, itp.at(id)).y_};
-    //  renderer.fillTriangle2D(p0, p1, p2, itp.getColor());
+    //  renderer.fillTriangle2D(p0, p1, p2, itp.color());
     //}
  // }
 

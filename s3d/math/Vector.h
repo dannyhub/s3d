@@ -46,24 +46,25 @@ public:
   Vector2(const Point2& p0, const Point2& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_) {
   }
 
-  T getX() const {
+  T x() const {
     return x_;
   }
 
-  T getY() const{
+  T y() const{
     return y_;
   }
 
-  void setX(T x) {
+  void x(T x) {
     x_ = x;
   }
 
-  void setY(T y){
+  void y(T y){
     y_ = y;
   }
 
   T length() const;
   Vector2 normalize() const;
+
   void normalizeSelf() {
     assert(std::is_floating_point<T>::value);
 
@@ -117,11 +118,11 @@ public:
   Vector3(const POINT& p0, const POINT& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_), z_(p1.z_ - p0.z_) {
   }
 
-  T getX() const{
+  T x() const{
     return x_;
   }
 
-  T getY() const{
+  T y() const{
     return y_;
   }
 
@@ -213,11 +214,11 @@ public:
   Vector4(const POINT0& p0, const POINT1& p1) : x_(p1.x_ - p0.x_), y_(p1.y_ - p0.y_), z_(p1.z_ - p0.z_), w_(T(1)) {
   }
 
-  T getX() const{
+  T x() const{
     return x_;
   }
 
-  T getY() const{
+  T y() const{
     return y_;
   }
 

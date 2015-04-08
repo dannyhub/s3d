@@ -18,10 +18,10 @@ public:
     buffer_[y * width_ + x] = p;
   }
 
-  int getWidth() const {
+  int width() const {
     return width_;
   }
-  int getHeight() const {
+  int height() const {
     return height_;
   }
 
@@ -77,6 +77,18 @@ public:
 
   template<typename T, typename BITMAP>
   void drawBitmap(const Point2<T>& p0, BITMAP& bmp);
+
+  template<typename T, typename TEXTURE>
+  void fillFlatTopTriangle2DTexture(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2,
+                                    const Point2<T>& t0, const Point2<T>& t1, const Point2<T>& t2, TEXTURE& txt);
+
+  template<typename T, typename TEXTURE>
+  void fillFlatBottomTriangle2DTexture(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2,
+                                       const Point2<T>& t0, const Point2<T>& t1, const Point2<T>& t2, TEXTURE& txt);
+
+  template<typename T, typename TEXTURE>
+  void fillTriangle2DTexture(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2,
+                             const Point2<T>& t0, const Point2<T>& t1, const Point2<T>& t2, TEXTURE& txt);
 
 #ifdef WIN32_GDI_RENDERDER
   HDC hdc_;
@@ -231,6 +243,127 @@ void Renderer::fillTriangle2D(const Point2<T>& p0, const Point2<T>& p1, const Po
 
     fillFlatBottomTriangle2D(dp0, Point2<T>{newx, dp1.y_ }, dp1, c);
     fillFlatTopTriangle2D(dp1, Point2<T>{newx, dp1.y_}, dp2, c);
+  }
+}
+
+namespace impl
+{
+template<typename T>
+void sortPointsByY(Point2<T>& p0, Point2<T>& p1, Point2<T>& p2) {
+  if (p0.y_ > p1.y_) {
+    st::swap(p0, p1);
+  }
+
+  if (p1.y_ > p2.y_) {
+    st::swap(p1, p2);
+  }
+
+  if (p0.y_ > p1.y_) {
+    st::swap(p0, p1);
+  }
+}
+
+template<typename T, typename STUFF>
+void sortPointsAndStuffByY(Point2<T>& p0, Point2<T>& p1, Point2<T>& p2, STUFF& s0, STUFF& s1, STUFF& s2) {
+  if (p0.y_ > p1.y_) {
+    st::swap(p0, p1);
+    st::swap(s0, s1);
+  }
+
+  if (p1.y_ > p2.y_) {
+    st::swap(p1, p2);
+    st::swap(s1, s2);
+  }
+
+  if (p0.y_ > p1.y_) {
+    st::swap(p0, p1);
+    st::swap(s0, s1);
+  }
+}
+
+enum TriangleType {
+  kTriangleType_Invalid = 0,
+  kTriangleType_FlatTop,
+  kTriangleType_FlatBottom,
+  kTriangleType_BottomTop
+};
+
+template<typename PT>
+TriangleType splitTriangleToFlat(const PT& pt1, const PT& pt2, const PT& pt3, PT& splitPT) {
+  if ((equal(pt1.x_, pt2.x_) && equal(pt2.x_, pt3.x_)) || (equal(pt1.y_, pt2.y_) && equal(pt2.y_, pt3.y_))) //line
+    return kTriangleType_Invalid;
+
+  assert(p0.y_ <= p1.y_ &&  p1.y_ <= p2.y_);
+
+  if (equal(p0.y_, p1.y_)) {
+    return kTriangleType_FlatTop;
+  }
+  else if (equal(p1.y_, p2.y_)) {
+    return kTriangleType_FlatBottom;
+  }
+  else {
+    assert(!equal(p2.y_, p0.y_));
+    assert(!equalZero(p2.y_ - p0.y_));
+
+    const auto m = (p2.x_ - p0.x_) / (p2.y_ - p0.y_);
+    const auto newx = p0.x_ + (p1.y_ - p0.y_) * m;
+
+    splitPT.x_ = newx;
+    splitPT.y_ = p1.y_;
+    return kTriangleType_BottomTop;
+  }
+}
+
+}// impl
+
+template<typename T, typename TEXTURE>
+void Renderer::fillFlatTopTriangle2DTexture(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2,
+                                            const Point2<T>& t0, const Point2<T>& t1, const Point2<T>& t2, TEXTURE& txt) {
+
+}
+
+template<typename T, typename TEXTURE>
+void Renderer::fillFlatBottomTriangle2DTexture(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2,
+                                               const Point2<T>& t0, const Point2<T>& t1, const Point2<T>& t2, TEXTURE& txt) {
+
+}
+
+template<typename T, typename TEXTURE>
+void Renderer::fillTriangle2DTexture(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2,
+                                     const Point2<T>& t0, const Point2<T>& t1, const Point2<T>& t2, TEXTURE& txt) {
+  if ((equal(p0.x_, p1.x_) && equal(p1.x_, p2.x_)) || (equal(p0.y_, p1.y_) && equal(p1.y_, p2.y_))) // triangle is a line
+    return;
+
+  auto dp0 = p0, dp1 = p1, dp2 = p2;
+  auto dt0 = t0, dt1 = t1, dt2 = t2;
+  impl::sortPointsAndStuffByY(dp0, dp1, dp2, dt0, dt1, dt2);
+
+  assert(dp0.y_ <= dp1.y_ &&  dp1.y_ <= dp2.y_);
+
+  Point2<T> splitPT;
+  const auto triType = impl::splitTriangleToFlat(dp0, dp1, dp2, splitPT);
+  if (kTriangleType_Invalid == triType)
+    return;
+
+  if (kTriangleType_FlatTop == triType) {
+    dp0.y_ = dp1.y_;
+    fillFlatTopTriangle2DTexture(dp0, dp1, dp2, dt0, dt1, dt2, txt);
+  }
+  else if (kTriangleType_FlatBottom == triType) {
+    dp1.y_ = dp2.y_;
+    fillFlatBottomTriangle2DTexture(dp1, dp2, dp0, dt1, dt2, dt0, txt);
+  }
+  else if(kTriangleType_FlatBottom == triType) {
+    const auto texY = (dt2.y_ - dt0.y_) * splitPT.y_ / dp2.y_;
+    const auto m = (dt2.x_ - dt0.x_) / (dt2.y_ - dt0.y_);
+    const auto texX = dt0.x_ + m * texY;
+
+    const auto splitTexPT = {texX, texY};
+    fillFlatTopTriangle2DTexture(dp0, splitPT, dp1, dt0, splitTexPT, dt1, txt);
+    fillFlatBottomTriangle2DTexture(dp1, splitPT, dp2, dt1, splitTexPT, dt2,  txt);
+  }
+  else {
+    assert(false);
   }
 }
 
@@ -414,29 +547,29 @@ public:
       c2_(c2),
       c3_(c3) {
  
-    if (pt1_.y_ > pt2_.y_) {
+    if (pt1_.y() > pt2_.y()) {
       std::swap(pt1_, pt2_);
       std::swap(c1_, c2_);
      }
 
-    if (pt2_.y_ > pt3_.y_) {
+    if (pt2_.y() > pt3_.y()) {
       std::swap(pt2_, pt3_);
       std::swap(c2_, c3_);
     }
 
-    if (pt1_.y_ > pt3_.y_) {
-      std::swap(pt1_, pt3_);
-      std::swap(c1_, c3_);
+    if (pt1_.y() > pt2_.y()) {
+      std::swap(pt1_, pt2_);
+      std::swap(c1_, c2_);
     }
 
-    assert(pt1_.y_ <= pt2_.y_ &&  pt2_.y_ <= pt3_.y_);
+    assert((pt1_.y() <= pt2_.y()) &&  (pt2_.y() <= pt3_.y()));
 
     PT ptSplit;
     Color curColorLeft, curColorRight;
 
     auto triType = splitTriangleToFlat(pt1_, pt2_, pt3_, ptSplit);
     if (kTriangleType_FlatBottom == triType) {
-      if (pt3_.x_ < pt2_.x_) {
+      if (pt3_.x() < pt2_.x()) {
         std::swap(pt3_, pt2_);
         std::swap(c2_, c3_);
       }
@@ -446,7 +579,7 @@ public:
       triangleType_ = kTriangleType_FlatBottom;
 
     } else if (kTriangleType_FlatTop == triType) {
-      if (pt2_.x_ < pt1_.x_) {
+      if (pt2_.x() < pt1_.x()) {
         std::swap(pt1_, pt2_);
         std::swap(c1_, c2_);
       }
@@ -456,7 +589,7 @@ public:
       triangleType_ = kTriangleType_FlatTop;
 
     } else if (kTriangleType_BottomTop == triType) {
-      if (pt3_.x_ < pt2_.x_) {
+      if (pt3_.x() < pt2_.x()) {
         std::swap(pt3_, pt2_);
         std::swap(c2_, c3_);
       }
@@ -466,12 +599,12 @@ public:
       c4_ = c3_;
 
       //compute c3
-      const auto h = pt4_.y_ - pt1_.y_;
-      const auto dist = pt3_.y_ - pt1_.y_;
+      const auto h = pt4_.y() - pt1_.y();
+      const auto dist = pt3_.y() - pt1_.y();
 
-      const auto r = dist * double(c4_.getRed() - c1_.getRed()) / (h);
-      const auto b = dist * double(c4_.getBlue() - c1_.getBlue()) / (h);
-      const auto g = dist * double(c4_.getGreen() - c1_.getGreen()) / (h);
+      const auto r = dist * double(c4_.red() - c1_.red()) / (h);
+      const auto b = dist * double(c4_.blue() - c1_.blue()) / (h);
+      const auto g = dist * double(c4_.green() - c1_.green()) / (h);
 
       c3_.setValue(r, g, b);
       curColorLeft = c1_;
@@ -482,15 +615,15 @@ public:
       triangleType_ = kTriangleType_Invalid;
     }
 
-    height_ = pt3_.y_ - pt1_.y_;
+    height_ = pt3_.y() - pt1_.y();
 
-    lr_ = curColorLeft.getRed();
-    lb_ = curColorLeft.getBlue();
-    lg_ = curColorLeft.getGreen();
+    lr_ = curColorLeft.red();
+    lb_ = curColorLeft.blue();
+    lg_ = curColorLeft.green();
 
-    rr_ = curColorRight.getRed();
-    rb_ = curColorRight.getBlue();
-    rg_ = curColorRight.getGreen();
+    rr_ = curColorRight.red();
+    rb_ = curColorRight.blue();
+    rg_ = curColorRight.green();
      
   }
 
@@ -500,14 +633,14 @@ public:
       return;
 
     assert(triType != kTriangleType_BottomTop);
-    assert(p0.y_ == p1.y_);
-    assert(p0.x_ <= p1.x_);
+    assert(p0.y() == p1.y());
+    assert(p0.x() <= p1.x());
 
-    int  startX = static_cast<int>(std::ceil(p0.x_));
-    int  endX = static_cast<int>(std::ceil(p1.x_) - 1);
-    const int y = static_cast<int>(p0.y_);
+    int  startX = static_cast<int>(std::ceil(p0.x()));
+    int  endX = static_cast<int>(std::ceil(p1.x()) - 1);
+    const int y = static_cast<int>(p0.y());
 
-    const auto width = p1.x_ - p0.x_;
+    const auto width = p1.x() - p0.x();
     if (equalZero(width))
       return;
 
@@ -533,26 +666,26 @@ public:
       c3_ = c4_;
       c1_ = c2_;
       c2_ = c3_;
-      height_ = pt4_.y_ - pt3_.y_;
+      height_ = pt4_.y() - pt3_.y();
       triangleType_ = triType;
     }
 
     if (triType == kTriangleType_FlatBottom) {
-      lr_ += double(c2_.getRed() - c1_.getRed()) / height_;
-      lb_ += double(c2_.getBlue() - c1_.getBlue()) / height_;
-      lg_ += double(c2_.getGreen() - c1_.getGreen()) / height_;
+      lr_ += double(c2_.red() - c1_.red()) / height_;
+      lb_ += double(c2_.blue() - c1_.blue()) / height_;
+      lg_ += double(c2_.green() - c1_.green()) / height_;
 
-      rr_ += double(c3_.getRed() - c1_.getRed()) / height_;
-      rb_ += double(c3_.getBlue() - c1_.getBlue()) / height_;
-      rg_ += double(c3_.getGreen() - c1_.getGreen()) / height_;
+      rr_ += double(c3_.red() - c1_.red()) / height_;
+      rb_ += double(c3_.blue() - c1_.blue()) / height_;
+      rg_ += double(c3_.green() - c1_.green()) / height_;
     } else if (triType == kTriangleType_FlatTop) {
-      lr_ += double(c3_.getRed() - c1_.getRed()) / height_;
-      lb_ += double(c3_.getBlue() - c1_.getBlue()) / height_;
-      lg_ += double(c3_.getGreen() - c1_.getGreen()) / height_;
+      lr_ += double(c3_.red() - c1_.red()) / height_;
+      lb_ += double(c3_.blue() - c1_.blue()) / height_;
+      lg_ += double(c3_.green() - c1_.green()) / height_;
 
-      rr_ += double(c3_.getRed() - c2_.getRed()) / height_;
-      rb_ += double(c3_.getBlue() - c2_.getBlue()) / height_;
-      rg_ += double(c3_.getGreen() - c2_.getGreen()) / height_;
+      rr_ += double(c3_.red() - c2_.red()) / height_;
+      rb_ += double(c3_.blue() - c2_.blue()) / height_;
+      rg_ += double(c3_.green() - c2_.green()) / height_;
     }
 
   }
@@ -566,16 +699,187 @@ private:
   TriangleType triangleType_;
 };
 
+//template<typename VERTEX, typename TEXTURE>
+//class TextureFiller {
+//public:
+//  typedef VERTEX::PointType PointType;
+//
+//  TextureFiller(const VERTEX& v1, const VERTEX& v2, const VERTEX& v3, TEXTURE& texture)
+//  : textureMgr_(textureMgr),
+//    pt1_(v1.point()),
+//    pt2_(v2.point()),
+//    pt3_(v3.point()),
+//    c1_(v1.texturePoint()),
+//    c2_(v2.texturePoint()),
+//    c3_(v3.texturePoint()) {
+//
+//    if (pt1_.y() > pt2_.y()) {
+//      std::swap(pt1_, pt2_);
+//      std::swap(c1_, c2_);
+//    }
+//
+//    if (pt2_.y() > pt3_.y()) {
+//      std::swap(pt2_, pt3_);
+//      std::swap(c2_, c3_);
+//    }
+//
+//    if (pt1_.y() > pt3_.y()) {
+//      std::swap(pt1_, pt3_);
+//      std::swap(c1_, c3_);
+//    }
+//
+//    assert(pt1_.y() <= pt2_.y() &&  pt2_.y() <= pt3_.y());
+//
+//    PT ptSplit;
+//    PointType curColorLeft, curColorRight;
+//
+//    auto triType = splitTriangleToFlat(pt1_, pt2_, pt3_, ptSplit);
+//    if (kTriangleType_FlatBottom == triType) {
+//      if (pt3_.x() < pt2_.x()) {
+//        std::swap(pt3_, pt2_);
+//        std::swap(c2_, c3_);
+//      }
+//
+//      curColorLeft = c1_;
+//      curColorRight = c1_;
+//      triangleType_ = kTriangleType_FlatBottom;
+//
+//    }
+//    else if (kTriangleType_FlatTop == triType) {
+//      if (pt2_.x() < pt1_.x()) {
+//        std::swap(pt1_, pt2_);
+//        std::swap(c1_, c2_);
+//      }
+//
+//      curColorLeft = c1_;
+//      curColorRight = c2_;
+//      triangleType_ = kTriangleType_FlatTop;
+//
+//    }
+//    else if (kTriangleType_BottomTop == triType) {
+//      if (pt3_.x() < pt2_.x()) {
+//        std::swap(pt3_, pt2_);
+//        std::swap(c2_, c3_);
+//      }
+//
+//      pt4_ = pt3_;
+//      pt3_ = ptSplit;
+//      c4_ = c3_;
+//
+//      //compute c3
+//      const auto h = pt4_.y() - pt1_.y();
+//      const auto dist = pt3_.y() - pt1_.y();
+//
+//      const auto r = dist * double(c4_.red() - c1_.red()) / (h);
+//      const auto b = dist * double(c4_.blue() - c1_.blue()) / (h);
+//      const auto g = dist * double(c4_.green() - c1_.green()) / (h);
+//
+//      c3_.setValue(r, g, b);
+//      curColorLeft = c1_;
+//      curColorRight = c1_;
+//
+//      triangleType_ = kTriangleType_FlatBottom;
+//    }
+//    else {
+//      triangleType_ = kTriangleType_Invalid;
+//    }
+//
+//    height_ = pt3_.y() - pt1_.y();
+//
+//    lr_ = curColorLeft.red();
+//    lb_ = curColorLeft.blue();
+//    lg_ = curColorLeft.green();
+//
+//    rr_ = curColorRight.red();
+//    rb_ = curColorRight.blue();
+//    rg_ = curColorRight.green();
+//
+//  }
+//
+//  template<typename RENDERER>
+//  void operator() (RENDERER& renderer_, const PT& p0, const PT& p1, TriangleType triType) {
+//    if (kTriangleType_Invalid == triType)
+//      return;
+//
+//    assert(triType != kTriangleType_BottomTop);
+//    assert(p0.y() == p1.y());
+//    assert(p0.x() <= p1.x());
+//
+//    int  startX = static_cast<int>(std::ceil(p0.x()));
+//    int  endX = static_cast<int>(std::ceil(p1.x()) - 1);
+//    const int y = static_cast<int>(p0.y());
+//
+//    const auto width = p1.x() - p0.x();
+//    if (equalZero(width))
+//      return;
+//
+//    const auto redi = (rr_ - lr_) / width;
+//    const auto bluei = (rb_ - lb_) / width;
+//    const auto greeni = (rg_ - lg_) / width;
+//
+//    double r = lr_;
+//    double b = lb_;
+//    double g = lg_;
+//    Color c;
+//    c.setValue(r, g, b);
+//
+//    for (; startX <= endX; ++startX) {
+//      renderer_.drawPixel2D({ startX, y }, c.getABGRValue());
+//      r += redi;
+//      b += bluei;
+//      g += greeni;
+//      c.setValue(r, g, b);
+//    }
+//
+//    if (triangleType_ != triType) {
+//      c3_ = c4_;
+//      c1_ = c2_;
+//      c2_ = c3_;
+//      height_ = pt4_.y() - pt3_.y();
+//      triangleType_ = triType;
+//    }
+//
+//    if (triType == kTriangleType_FlatBottom) {
+//      lr_ += double(c2_.red() - c1_.red()) / height_;
+//      lb_ += double(c2_.blue() - c1_.blue()) / height_;
+//      lg_ += double(c2_.green() - c1_.green()) / height_;
+//
+//      rr_ += double(c3_.red() - c1_.red()) / height_;
+//      rb_ += double(c3_.blue() - c1_.blue()) / height_;
+//      rg_ += double(c3_.green() - c1_.green()) / height_;
+//    }
+//    else if (triType == kTriangleType_FlatTop) {
+//      lr_ += double(c3_.red() - c1_.red()) / height_;
+//      lb_ += double(c3_.blue() - c1_.blue()) / height_;
+//      lg_ += double(c3_.green() - c1_.green()) / height_;
+//
+//      rr_ += double(c3_.red() - c2_.red()) / height_;
+//      rb_ += double(c3_.blue() - c2_.blue()) / height_;
+//      rg_ += double(c3_.green() - c2_.green()) / height_;
+//    }
+//
+//  }
+//
+//private:
+//  TEXTURE& texture_;
+//  PointType pt1_; PointType pt2_; PointType pt3_; PointType pt4_;
+//  PointType c1_; PointType c2_; PointType c3_; PointType c4_;
+//
+//  double lr_, lb_, lg_, rr_, rb_, rg_;
+//  double height_;
+//  TriangleType triangleType_;
+//};
+
 template<typename T, typename BITMAP>
 void Renderer::drawBitmap(const Point2<T>& p0, BITMAP& bmp) {
-  const auto w = bmp.getWidth();
-  const auto h = bmp.getHeight();
+  const auto w = bmp.width();
+  const auto h = bmp.height();
   for (int row = 0; row < h; ++row) {
     for (int col = 0; col < w; ++col) {
-      auto x = p0.getX() + col;
-      auto y = p0.getY() + row;
+      auto x = p0.x() + col;
+      auto y = p0.y() + row;
 
-      if (x >= 0 && x < buffer_.getWidth() && y >= 0 && y < buffer_.getHeight())
+      if (x >= 0 && x < buffer_.width() && y >= 0 && y < buffer_.height())
         drawPixel2D({x, y}, bmp.getPixel(col, row));
     }
   }

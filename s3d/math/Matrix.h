@@ -496,10 +496,10 @@ Matrix<T, 4U, 4U> buildRotateMatrix4x4YXZ(double angley, double anglex, double a
   const auto sinz = ::sin(anglez);
 
   //rotate with: YXZ
-  Matrix<T, 4U, 4U> rotateYMat{cosy,  0, -siny,  0,
+  Matrix<T, 4U, 4U> rotateYMat{cosy,  0, -siny, 0,
                                0,     1,  0,    0,
                                siny,  0,  cosy, 0,
-                               0,     0,   0,   1};
+                               0,     0,  0,    1};
 
   Matrix<T, 4U, 4U> rotateXMat{1, 0,     0,    0,
                                0, cosx,  sinx, 0,

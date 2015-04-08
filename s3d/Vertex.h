@@ -22,47 +22,55 @@ public:
     point_.z_ = pt.z_;
   }
 
-  PointType getPoint() const {
+  PointType point() const {
     return point_;
   }
 
-  Vector4FD getNormal_() const {
+  void point(const PointType& p) {
+    point_ = p;
+  }
+
+  Vector4FD normal() const {
     return normal_;
   }
 
-  Color getColor() const {
+  Color color() const {
     return color_;
   }
 
-  void setPoint(const PointType& p) {
-    point_ = p;
+  PointType texturePoint() const {
+    return texturePoint_;
+  }
+
+  void texturePoint(const PointType& p) {
+    texturePoint_ = p;
   }
 
 private:
   PointType point_;
   Vector4FD normal_;
   Color color_;
-   
+  PointType texturePoint_;
 };
 
 template<typename T>
 Vertex operator * (const Vertex& v, const Matrix<T, 4U, 4U>& mat) {
   Vertex tr(v);
   //FIXME use the Point3F * MATRIX4x4
-  auto pt = Point4FD(v.getPoint()) * mat;
+  auto pt = Point4FD(v.point()) * mat;
 
   typedef Vertex::PointType::value_type value_type;
-  tr.setPoint(Point3F(static_cast<value_type>(pt.x_), static_cast<value_type>(pt.y_), static_cast<value_type>(pt.z_)));
+  tr.point(Point3F(static_cast<value_type>(pt.x_), static_cast<value_type>(pt.y_), static_cast<value_type>(pt.z_)));
   return tr;
 }
 
 template<typename T>
 Vertex& operator *= (Vertex& v, const Matrix<T, 4U, 4U>& mat) {
   //FIXME use the Point3F * MATRIX4x4
-  auto pt = Point4FD(v.getPoint()) * mat;
+  auto pt = Point4FD(v.point()) * mat;
 
   typedef Vertex::PointType::value_type value_type;
-  v.setPoint(Point3F(static_cast<value_type>(pt.x_), static_cast<value_type>(pt.y_), static_cast<value_type>(pt.z_)));
+  v.point(Point3F(static_cast<value_type>(pt.x_), static_cast<value_type>(pt.y_), static_cast<value_type>(pt.z_)));
   return v;
 }
 

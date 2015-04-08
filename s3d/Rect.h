@@ -21,51 +21,51 @@ public:
     height_ = height;
   }
 
-  T getX() const {
+  T x() const {
     return left_;
   }
 
-  T getY() const {
+  T y() const {
     return top_;
   }
 
-  T getLeft() const {
+  T left() const {
     return left_;
   }
 
-  T getTop() const {
+  T top() const {
     return top_;
   }
 
-  T getRight() const {
+  T right() const {
     return left_ + width_;
   }
 
-  T getBottom() const {
+  T bottom() const {
     return top_ + height_;
   }
 
-  T getWidth() const {
+  T width() const {
     return width_;
   }
 
-  T getHeight() const {
+  T height() const {
     return height_;
   }
 
-  void setLeft(T v) {
+  void left(T v) {
     left_ = v;
   }
 
-  void setTop(T v) {
+  void top(T v) {
     top_ = v;
   }
 
-  void setWidth(T v) {
+  void width(T v) {
     width_ = v;
   }
 
-  void setHeight(T v) {
+  void height(T v) {
     height_ = v;
   }
 

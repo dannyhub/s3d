@@ -10,11 +10,11 @@ class BMPBitmap
 public:
   void fromFile(const std::string& filename);
 
-  int getWidth() const {
+  int width() const {
     return width_;
   }
 
-  int getHeight() const {
+  int height() const {
     return height_;
   }
 

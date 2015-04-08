@@ -126,7 +126,7 @@ void Renderer::drawLine2D_Bresenham(const Point2<int>& p0, const Point2<int>& p1
 void Renderer::drawLine2D(const Point2<int>& p0, const Point2<int>& p1, const Color& c) {
   Point2<int> cp0 = p0;
   Point2<int> cp1 = p1;
-  if (!clipLine(cp0, cp1, RectI(0, 0, buffer_.getWidth() -1, buffer_.getHeight() -1)))
+  if (!clipLine(cp0, cp1, RectI(0, 0, buffer_.width() -1, buffer_.height() -1)))
     return;
   
   if (cp1.x_ == cp0.x_) {
@@ -263,12 +263,12 @@ Point2<int> intersectPoint(const unsigned pCode, const Point2<int>& p, const dou
   //line (y1-y0) = mx(x1-x0)
 
   //for hor
-  //x' = p0.x_ + (clipRect.getY() - p0.y_) * (dx / dy);
-  //y' = clipRect.getY();
+  //x' = p0.x_ + (clipRect.y() - p0.y_) * (dx / dy);
+  //y' = clipRect.y();
 
   //for ver
-  //x' = clipRect.getX();
-  //y' = p0.y_ + (clipRect.getX() - p0.x_) * (dy / dx);
+  //x' = clipRect.x();
+  //y' = p0.y_ + (clipRect.x() - p0.x_) * (dy / dx);
 
   switch (pCode) {
     case clipCodeC:
@@ -371,24 +371,24 @@ bool Renderer::clipLine(Point2<int>& p0, Point2<int>& p1, const RectI& clipRect)
   unsigned int p0Code = 0;
   unsigned int p1Code = 0;
 
-  if (p0.x_ < clipRect.getLeft())
+  if (p0.x_ < clipRect.left())
     p0Code |= clipCodeW;
-  else if (p0.x_ > clipRect.getRight())
+  else if (p0.x_ > clipRect.right())
     p0Code |= clipCodeE;
 
-  if (p0.y_ < clipRect.getTop())
+  if (p0.y_ < clipRect.top())
     p0Code |= clipCodeN;
-  else if (p0.y_ > clipRect.getBottom())
+  else if (p0.y_ > clipRect.bottom())
     p0Code |= clipCodeS;
 
-  if (p1.x_ < clipRect.getLeft())
+  if (p1.x_ < clipRect.left())
     p1Code |= clipCodeW;
-  else if (p1.x_ > clipRect.getRight())
+  else if (p1.x_ > clipRect.right())
     p1Code |= clipCodeE;
 
-  if (p1.y_ < clipRect.getTop())
+  if (p1.y_ < clipRect.top())
     p1Code |= clipCodeN;
-  else if (p1.y_ > clipRect.getBottom())
+  else if (p1.y_ > clipRect.bottom())
     p1Code |= clipCodeS;
 
   if (p0Code == 0 && p1Code == 0) {
@@ -402,13 +402,13 @@ bool Renderer::clipLine(Point2<int>& p0, Point2<int>& p1, const RectI& clipRect)
   //line (y1-y0) = mx(x1-x0)
   auto dx = p1.x_ - p0.x_;
   auto dy = p1.y_ - p0.y_;
-  auto ipt0 = intersectPoint(p0Code, p0, dx, dy, clipRect.getX(), clipRect.getY(), clipRect.getRight(), clipRect.getBottom());
-  auto ipt1 = intersectPoint(p1Code, p1, dx, dy, clipRect.getX(), clipRect.getY(), clipRect.getRight(), clipRect.getBottom());
+  auto ipt0 = intersectPoint(p0Code, p0, dx, dy, clipRect.x(), clipRect.y(), clipRect.right(), clipRect.bottom());
+  auto ipt1 = intersectPoint(p1Code, p1, dx, dy, clipRect.x(), clipRect.y(), clipRect.right(), clipRect.bottom());
 
-  if (ipt0.x_ < clipRect.getX() || ipt0.x_ > clipRect.getRight() ||
-      ipt1.x_ < clipRect.getX() || ipt1.x_ > clipRect.getRight() ||
-      ipt0.y_ < clipRect.getY() || ipt0.y_ > clipRect.getBottom() ||
-      ipt1.y_ < clipRect.getY() || ipt1.y_ > clipRect.getBottom()
+  if (ipt0.x_ < clipRect.x() || ipt0.x_ > clipRect.right() ||
+      ipt1.x_ < clipRect.x() || ipt1.x_ > clipRect.right() ||
+      ipt0.y_ < clipRect.y() || ipt0.y_ > clipRect.bottom() ||
+      ipt1.y_ < clipRect.y() || ipt1.y_ > clipRect.bottom()
       ) {
 
       return false;

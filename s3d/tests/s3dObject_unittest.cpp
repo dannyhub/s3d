@@ -13,11 +13,11 @@ using namespace std;
 BOOST_AUTO_TEST_CASE(s3dObject_unittest1) {
   auto pt  = Vertex::PointType{1, 2, 3};
   Vertex vertex(pt);
-  BOOST_CHECK(pt == vertex.getPoint());
+  BOOST_CHECK(pt == vertex.point());
 
   auto pt2 = Vertex::PointType{11, 22, 33};
-  vertex.setPoint(pt2);
-  BOOST_CHECK(pt2 == vertex.getPoint());
+  vertex.point(pt2);
+  BOOST_CHECK(pt2 == vertex.point());
 
   Matrix<float, 4U, 4U> mat {3,0,0,0,
                              0,3,0,0,
@@ -26,10 +26,10 @@ BOOST_AUTO_TEST_CASE(s3dObject_unittest1) {
 
   Vertex vertex3(pt);
   Vertex vertex4 = vertex3 * mat;
-  BOOST_CHECK(vertex4.getPoint() == pt * 3);
+  BOOST_CHECK(vertex4.point() == pt * 3);
 
   vertex3 = vertex3 * mat;
-  BOOST_CHECK(vertex3.getPoint() == pt * 3);
+  BOOST_CHECK(vertex3.point() == pt * 3);
 
   Polygon3 poly = {0,1,2};
   Polygon3::value_type i = 0;
