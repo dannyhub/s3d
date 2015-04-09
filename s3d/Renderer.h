@@ -266,19 +266,21 @@ void sortPointsByY(Point2<T>& p0, Point2<T>& p1, Point2<T>& p2) {
 template<typename T, typename STUFF>
 void sortPointsAndStuffByY(Point2<T>& p0, Point2<T>& p1, Point2<T>& p2, STUFF& s0, STUFF& s1, STUFF& s2) {
   if (p0.y_ > p1.y_) {
-    st::swap(p0, p1);
-    st::swap(s0, s1);
+    std::swap(p0, p1);
+    std::swap(s0, s1);
   }
 
   if (p1.y_ > p2.y_) {
-    st::swap(p1, p2);
-    st::swap(s1, s2);
+    std::swap(p1, p2);
+    std::swap(s1, s2);
   }
 
   if (p0.y_ > p1.y_) {
-    st::swap(p0, p1);
-    st::swap(s0, s1);
+    std::swap(p0, p1);
+    std::swap(s0, s1);
   }
+
+  assert(p0.y_ <= p1.y_ && p1.y_ <= p2.y_);
 }
 
 enum TriangleType {
@@ -317,15 +319,133 @@ TriangleType splitTriangleToFlat(const PT& pt1, const PT& pt2, const PT& pt3, PT
 }// impl
 
 template<typename T, typename TEXTURE>
-void Renderer::fillFlatTopTriangle2DTexture(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2,
-                                            const Point2<T>& t0, const Point2<T>& t1, const Point2<T>& t2, TEXTURE& txt) {
+void Renderer::fillFlatTopTriangle2DTexture(const Point2<T>& sp0, const Point2<T>& sp1, const Point2<T>& sp2,
+                                            const Point2<T>& st0, const Point2<T>& st1, const Point2<T>& st2, TEXTURE& txt) {
+  auto p0 = sp0, p1 = sp1, p2 = sp2;
+  auto tp0 = st0, tp1 = st1, tp2 = st2;
 
+  impl::sortPointsAndStuffByY(p0, p1, p2, tp0, tp1, tp2);
+  if (p0.x_ > p1.x_) {
+    std::swap(p0, p1);
+    std::swap(tp0, tp1);
+  }
+
+  assert(p0.x_ < p1.x_);
+  assert(equal(p0.y_, p1.y_));
+
+  const auto dy = p2.y_ - p0.y_;
+
+  assert(!equalZero(dy) && dy > 0.);
+
+  const auto dxdyl = (p2.x_ - p0.x_) / dy;
+  const auto dxdyr = (p2.x_ - p1.x_) / dy;
+
+  int ys = static_cast<int>(std::ceil(p0.y_));
+  const int ye = static_cast<int>(std::ceil(p2.y_) - 1);
+
+  //correct the x whe ys was changed from p0.y()
+  auto xl = p0.x_ + (dxdyl * (ys - p0.y_));
+  auto xr = p1.x_ + (dxdyr * (ys - p1.y_));
+
+  const auto dudyl = (tp2.x_ - tp0.x_) / dy;
+  const auto dvdyl = (tp2.y_ - tp0.y_) / dy;
+
+  const auto dudyr = (tp2.x_ - tp1.x_) / dy;
+  const auto dvdyr = (tp2.y_ - tp1.y_) / dy;
+
+  double txl = tp0.x_;
+  double tyl = tp0.y_;
+  double txr = tp1.x_;
+  double tyr = tp1.y_;
+
+  for (; ys <= ye; ++ys) {
+    int  startX = static_cast<int>(std::ceil(xl));
+    int  endX = static_cast<int>(std::ceil(xr) - 1);
+    const int y = static_cast<int>(ys);
+
+    const double dtx = (txr - txl) / (endX - startX);
+    const double dty = (tyr - tyl) / (endX - startX);
+    double tx = txl;
+    double ty = tyl;
+    for (; startX <= endX; ++startX) {
+      drawPixel2D({ startX, (int)ys }, txt.getPixel((int)tx, (int)ty));
+      tx += dtx;
+      ty += dty;
+    }
+
+    xl += dxdyl;
+    xr += dxdyr;
+
+    txl += dudyl;
+    txr += dudyr;
+    tyl += dvdyl;
+    tyr += dvdyr;
+  }
 }
 
 template<typename T, typename TEXTURE>
-void Renderer::fillFlatBottomTriangle2DTexture(const Point2<T>& p0, const Point2<T>& p1, const Point2<T>& p2,
-                                               const Point2<T>& t0, const Point2<T>& t1, const Point2<T>& t2, TEXTURE& txt) {
+void Renderer::fillFlatBottomTriangle2DTexture(const Point2<T>& sp0, const Point2<T>& sp1, const Point2<T>& sp2,
+                                               const Point2<T>& st0, const Point2<T>& st1, const Point2<T>& st2, TEXTURE& txt) {
+  auto p0 = sp0, p1 = sp1, p2 = sp2;
+  auto tp0 = st0, tp1 = st1, tp2 = st2;
 
+  impl::sortPointsAndStuffByY(p0, p1, p2, tp0, tp1, tp2);
+  if (p1.x_ > p2.x_) {
+    std::swap(p1, p2);
+    std::swap(tp1, tp2);
+  }
+
+  assert(p1.x_ < p2.x_);
+  assert(equal(p1.y_, p2.y_));
+
+  const auto dy = p2.y_ - p0.y_;
+
+  assert(!equalZero(dy) && dy > 0.);
+
+  const auto dxdyl = (p1.x_ - p0.x_) / dy;
+  const auto dxdyr = (p2.x_ - p0.x_) / dy;
+
+  int ys = static_cast<int>(std::ceil(p0.y_));
+  const int ye = static_cast<int>(std::ceil(p2.y_) - 1);
+
+  //correct the x whe ys was changed from p0.y()
+  auto xl = p0.x_ + (dxdyl * (ys - p0.y_));
+  auto xr = p0.x_ + (dxdyr * (ys - p0.y_));
+
+  const auto dudyl = (tp1.x_ - tp0.x_) / dy;
+  const auto dvdyl = (tp1.y_ - tp0.y_) / dy;
+
+  const auto dudyr = (tp2.x_ - tp0.x_) / dy;
+  const auto dvdyr = (tp2.y_ - tp0.y_) / dy;
+
+  double txl = tp0.x_;
+  double txr = tp0.x_;
+  double tyl = tp0.y_;
+  double tyr = tp0.y_;
+
+  for (; ys <= ye; ++ys) {
+    int  startX = static_cast<int>(std::ceil(xl));
+    int  endX = static_cast<int>(std::ceil(xr) - 1);
+    const int y = static_cast<int>(ys);
+
+    const double dtx = (txr - txl) / (endX - startX);
+    const double dty = (tyr - tyl) / (endX - startX);
+    double tx = txl;
+    double ty = tyl;
+    for (; startX <= endX; ++startX) {
+      drawPixel2D({ startX, (int)ys }, txt.getPixel((int)tx, (int)ty));
+      tx += dtx;
+      ty += dty;
+    }
+
+    xl += dxdyl;
+    xr += dxdyr;
+    
+    txl += dudyl;
+    txr += dudyr;
+    tyl += dvdyl;
+    tyr += dvdyr;
+  }
 }
 
 template<typename T, typename TEXTURE>
